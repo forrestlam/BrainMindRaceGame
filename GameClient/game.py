@@ -148,11 +148,12 @@ def game():
     # load the player avatar and nickname
     avatarImg, nickName = None, "匿名玩家"
     if connectUser:
-        avatarUrl = connectUser.avatar
+        print(connectUser)
+        avatarUrl = connectUser['avatar']
         avatarStr = urllib.request.urlopen(avatarUrl).read()
         avatarImg = pygame.image.load(io.BytesIO(avatarStr))
         avatarImg = pygame.transform.scale(avatarImg, (50, 50))
-        nickName = connectUser.nickname
+        nickName = connectUser['nickname']
     else:
         avatarImg = pygame.image.load('image/user_unlogin.png')
 
@@ -333,8 +334,6 @@ def game():
             drawText('Rest Life: %s' % (count), font, windowSurface, 310, 60)
             drawText('Speed: %s' % (gameParams['speed']), font, windowSurface, 310, 80)            
             windowSurface.blit(playerImage, playerRect)
-            windowSurface.blit(avatarImg, (10, 10))
-            drawText(nickName, font, windowSurface, 10, 65)
             
             for b in baddies:
                 windowSurface.blit(b['surface'], b['rect'])
@@ -343,7 +342,10 @@ def game():
                 windowSurface.blit(s['surface'], s['rect'])                
 
             for s in walls:
-                windowSurface.blit(s['surface'], s['rect'])                
+                windowSurface.blit(s['surface'], s['rect'])  
+
+            windowSurface.blit(avatarImg, (10, 10))
+            drawText(nickName, font, windowSurface, 10, 65)              
 
             pygame.display.update()
 
