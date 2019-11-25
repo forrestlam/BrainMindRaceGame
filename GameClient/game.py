@@ -7,6 +7,9 @@ import multiprocessing    # for processing osc stream
 from pythonosc import dispatcher as dsp
 from pythonosc import osc_server
 from pythonosc import udp_client
+import urllib.request
+import json
+import io
 
 event = multiprocessing.Event()
 
@@ -39,6 +42,7 @@ MINY = -0.5
 MAXY = 1
 
 connectUser = None
+clientId = None
 
 def concen_handler(unused_addr, args, value):
     speed = args[0]['speed']
@@ -106,9 +110,17 @@ def drawText(text, font, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
+def uploadScore(score):
+    global clientId, connectUser
+    if clientId != None and connectUser != None:
+        response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame/%s/%s/%d'%(clientId, connectUser['userId'], score))
+        res = response.read().decode('utf-8')
+        resJson = json.loads(res)
+        if not resJson['success']:
+            print('Failed to upload score')
 
 def game():
-    global playerRect, gameParams, count
+    global playerRect, gameParams, count, connectUser, clientId
     starttime = None  # for timing
     endtime = None
     # set up pygame, the window, and the mouse cursor
@@ -133,6 +145,16 @@ def game():
     car2 = pygame.image.load('image/car2.png')
     car3 = pygame.image.load('image/car3.png')
     car4 = pygame.image.load('image/car4.png')
+    # load the player avatar and nickname
+    avatarImg, nickName = None, "匿名玩家"
+    if connectUser:
+        avatarUrl = connectUser.avatar
+        avatarStr = urllib.request.urlopen(avatarUrl).read()
+        avatarImg = pygame.image.load(io.BytesIO(avatarStr))
+        avatarImg = pygame.transform.scale(avatarImg, (50, 50))
+        nickName = connectUser.nickname
+    else:
+        avatarImg = pygame.image.load('image/user_unlogin.png')
 
     playerRect = playerImage.get_rect()        
     starImage = pygame.image.load('image/star.png')
@@ -311,7 +333,8 @@ def game():
             drawText('Rest Life: %s' % (count), font, windowSurface, 310, 60)
             drawText('Speed: %s' % (gameParams['speed']), font, windowSurface, 310, 80)            
             windowSurface.blit(playerImage, playerRect)
-
+            windowSurface.blit(avatarImg, (10, 10))
+            drawText(nickName, font, windowSurface, 10, 65)
             
             for b in baddies:
                 windowSurface.blit(b['surface'], b['rect'])
@@ -333,6 +356,8 @@ def game():
                     g.close()
                     topScore = score
                 gameOverSound.stop()
+                # upload the scroe
+                uploadScore(score)
                 break
 
             # Check if any of the star have hit the player.
@@ -370,8 +395,8 @@ def loop_event():
                 playerRect.left = MARGINRIGHT
         event.clear()
 
-def main(user):
-    global gameParams, oscProcess, connectUser
+def main(user=None, cid=None):
+    global gameParams, oscProcess, connectUser, clientId
     gameParams = multiprocessing.Manager().dict()
     gameParams['speed'] = 8
     gameParams['left'] = WINDOWWIDTH/2
@@ -380,6 +405,7 @@ def main(user):
     gameParams['addNewStarRate'] = MINADDNEWSTARRATE
 
     connectUser = user
+    clientId = cid
     
     thread.start_new_thread(loop_event, ())
     parser = argparse.ArgumentParser()

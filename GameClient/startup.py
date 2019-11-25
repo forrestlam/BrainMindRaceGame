@@ -41,7 +41,7 @@ def terminate():
     pygame.quit()
     requestFlag = False
     if connectUser != None:
-        startGame(connectUser)
+        startGame(connectUser, clientId)
     else:
         quit()
 
