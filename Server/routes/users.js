@@ -28,8 +28,13 @@ router.get('/login/:code', function (req, res) {
             var md5 = crypto.createHash('md5');
             md5.update(res.openid);
             var userId = md5.digest('hex');
-  
-            var newUser = { 'userId': userId, 'openId': res.openid, 'session_key': res.session_key };
+            
+            var curUser = { 'userId': userId, 'openId': res.openid, 'session_key': res.session_key };
+            if (global.users[userId]) {
+              // has logon before, update session_key
+              curUser = global.users[userId];
+              curUser.session_key = res.session_key;
+            }
             global.code2User[code] = newUser;
             global.users[newUser.userId] = newUser;
           } else if (res.errcode && res.errmsg) {
