@@ -26,7 +26,7 @@ router.get('/login/:code', function (req, res) {
           var res = JSON.parse(body);
           if (res.openid != undefined && res.session_key != undefined) {
             var md5 = crypto.createHash('md5');
-            md5.update(res.openid + res.session_key);
+            md5.update(res.openid);
             var userId = md5.digest('hex');
   
             var newUser = { 'userId': userId, 'openId': res.openid, 'session_key': res.session_key };
