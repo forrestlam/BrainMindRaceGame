@@ -4,6 +4,8 @@ var router = express.Router();
 var request = require('request');
 var crypto = require('crypto');
 
+var requestingTask = {}; //record the openid request
+
 /* GET users listing. */
 router.get('/', function (req, res, next) {
   res.send({ 'users': global.users });
@@ -14,24 +16,32 @@ router.get('/login/:code', function (req, res) {
   if (global.code2User[code]) {
     res.send({ 'success': true, 'user': global.code2User[code] });
   } else {
-    request('https://api.weixin.qq.com/sns/jscode2session?appid=' + global.appID + '&secret=' + global.appSecret + '&js_code=' + code + '&grant_type=authorization_code',
+    if (requestingTask[code]) {
+      res.send({'success': false, 'errMsg': 'requesting, please wait.'});
+    }
+    var r = request('https://api.weixin.qq.com/sns/jscode2session?appid=' + global.appID + '&secret=' + global.appSecret + '&js_code=' + code + '&grant_type=authorization_code',
       function (error, response, body) {
         if (!error && response.statusCode == 200) {
           console.log('login success, code=' + code + ', body=' + body) // 请求成功的处理逻辑
           var res = JSON.parse(body);
-
-          var md5 = crypto.createHash('md5');
-          md5.update(res.openid + res.session_key);
-          var userId = md5.digest('hex');
-
-          var newUser = { 'userId': userId, 'openId': res.openid, 'session_key': res.session_key };
-          global.code2User[code] = newUser;
-          global.users[newUser.userId] = newUser;
+          if (res.openid != undefined && res.session_key != undefined) {
+            var md5 = crypto.createHash('md5');
+            md5.update(res.openid + res.session_key);
+            var userId = md5.digest('hex');
+  
+            var newUser = { 'userId': userId, 'openId': res.openid, 'session_key': res.session_key };
+            global.code2User[code] = newUser;
+            global.users[newUser.userId] = newUser;
+          } else if (res.errcode && res.errmsg) {
+            console.log('code2session failed, errcode = ' + res.errcode + ', errmsg = ' + res.errmsg)
+          }
         } else {
           console.log('login failed');
         }
+        delete requestingTask[code];
       }
     );
+    requestingTask[code] = r;
     res.send({ 'success': false });
   }
 });
