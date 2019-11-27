@@ -14,7 +14,12 @@ router.get('/', function (req, res, next) {
 router.get('/login/:code', function (req, res) {
   var code = req.params.code;
   if (global.code2User[code]) {
-    res.send({ 'success': true, 'user': global.code2User[code] });
+    if (global.code2User[code] == 'invalid') {
+      delete global.code2User[code];
+      res.send({'success': false, 'errMsg': 'invalid code'});
+    } else {
+      res.send({ 'success': true, 'user': global.code2User[code] });
+    }
   } else {
     if (requestingTask[code]) {
       res.send({'success': false, 'errMsg': 'requesting, please wait.'});
@@ -35,9 +40,10 @@ router.get('/login/:code', function (req, res) {
               curUser = global.users[userId];
               curUser.session_key = res.session_key;
             }
-            global.code2User[code] = newUser;
-            global.users[newUser.userId] = newUser;
+            global.code2User[code] = curUser;
+            global.users[curUser.userId] = curUser;
           } else if (res.errcode && res.errmsg) {
+            global.code2User[code] = 'invalide';
             console.log('code2session failed, errcode = ' + res.errcode + ', errmsg = ' + res.errmsg)
           }
         } else {
