@@ -9,10 +9,7 @@
   <view bindtap="showScore" class="score">
   </view>
 
-  <!-- 登录 -->
-  <!-- <view class="uploader">
-    <view class="uploader-text" bindtap="doLogin">
-      <text>游戏精彩时刻</text>
-    </view>
-  </view> -->
+  <modal class="modal" hidden="{{hideScore}}" bindconfirm="doShare" confirmText="立即分享">
+    <image src="./rankbg.png" alt="" class="rankbg"></image>
+  </modal>
 </view>

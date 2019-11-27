@@ -11,7 +11,7 @@ Page({
     userID: '',
     code: '',
     nickName: '未登录',
-    showScore: false
+    hideScore: false
   },
 
   setUserInfo: function(res) {
@@ -30,6 +30,11 @@ Page({
         console.log(res);
         if (res.data.success) {
           this.data.userID = res.data.user.userId
+        } else {
+          if (res.data.errMsg == 'invalid code') {
+            this.data.code = "";
+            console.error('login failed, invalid code');
+          }
         }
       }
     })
@@ -154,6 +159,7 @@ Page({
       success: res => {
         console.log(res);
         if (res.data.success) {
+          this.data.hideScore = false;
           wx.showToast({
             title: '最高成绩是' + res.data.result.maxScore,
           });
@@ -165,5 +171,9 @@ Page({
         }
       }
     })
+  },
+
+  doShare: function(e) {
+
   },
 })

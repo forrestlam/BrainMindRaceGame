@@ -73,7 +73,7 @@ def isReadyToPlay():
 def intro():
     global clientId, connectUser
     pygame.init()
-    pygame.display.set_caption('最强大脑')
+    pygame.display.set_caption('脑力滑板赛')
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
