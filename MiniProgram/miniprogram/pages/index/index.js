@@ -11,7 +11,9 @@ Page({
     userID: '',
     code: '',
     nickName: '未登录',
-    hideScore: false
+    hideScore: true,
+    topScore: 0,
+    localAvatarUrl: './user-unlogin.png'
   },
 
   setUserInfo: function(res) {
@@ -20,7 +22,21 @@ Page({
       avatarUrl: res.userInfo.avatarUrl,
       userInfo: res.userInfo,
       nickName: res.userInfo.nickName
-    })
+    });
+    var that = this;
+    wx.downloadFile({
+      url: res.userInfo.avatarUrl,
+      success: res => {
+        // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+        if (res.statusCode === 200) {
+          that.setData({
+            localAvatarUrl: res.tempFilePath//将下载下来的地址给data中的变量变量
+          });
+        }
+      }, fail: res => {
+        console.log(res);
+      }
+    });
   },
 
   requestUserId: function(code) {
@@ -150,6 +166,7 @@ Page({
     if (this.data.userID.length == 0) {
       wx.showToast({
         title: '未登录服务器，请稍后再试',
+        icon: 'none'
       });
       console.error('还没登录服务器，请稍后再试');
       return;
@@ -159,10 +176,14 @@ Page({
       success: res => {
         console.log(res);
         if (res.data.success) {
-          this.data.hideScore = false;
-          wx.showToast({
-            title: '最高成绩是' + res.data.result.maxScore,
+          this.setData({
+            hideScore: false
           });
+          // this.drawSharePic(res.data.result.maxScore, res.data.result.concen);
+          this.drawSharePic(80, 90);
+          // wx.showToast({
+          //   title: '最高成绩是' + res.data.result.maxScore,
+          // });
         } else {
           wx.showToast({
             title: '获取成绩失败',
@@ -173,7 +194,67 @@ Page({
     })
   },
 
+  drawSharePic: function(topScore, concen) {
+    var that = this;
+    var systemInfo = wx.getSystemInfoSync();
+    var windowWidth = systemInfo.windowWidth;
+    var windowHeight = systemInfo.windowHeight;
+    var canvasWidth = 0.725 * windowWidth;
+    var canvasHeight = 0.6 * windowHeight;
+    var context = wx.createCanvasContext("rankpic");
+    // debugger;
+    context.drawImage("./rankbg.png", 0, 0, canvasWidth, canvasHeight);
+    context.drawImage('./top-score.png', (canvasWidth - 80) / 2, 15, 80, 10);
+    var avatarWidth = 40, avatarHeight = 40;
+    context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2, 40, avatarWidth, avatarHeight);
+    var typeWidth = 522/5, typeHeight = 96/5;
+    var typeId = topScore / 20 + 1;
+    if (topScore > 100) {
+      typeId = 6;
+    }
+    context.drawImage('./type'+typeId+'.png', (canvasWidth - typeWidth) / 2, 40 + avatarHeight + 15, typeWidth, typeHeight);
+    context.setFontSize(12);
+    context.setFillStyle('white');
+    context.fillText("游戏得分: " + topScore + '分', (canvasWidth - typeWidth) / 2 - 30, 65 + avatarHeight + typeHeight + 10);
+    context.fillText("专注度: " + concen + '分', canvasWidth / 2 + 10, 65 + avatarHeight + typeHeight + 10);
+    context.draw(true, () => {
+      wx.canvasToTempFilePath({
+        x: 100,
+        y: 200,
+        width: 50,
+        height: 50,
+        destWidth: 100,
+        destHeight: 100,
+        canvasId: 'rankpic',
+        success(res) {
+          // debugger;
+          // console.log(res.tempFilePath)
+          wx.saveImageToPhotosAlbum({
+            filePath: res.tempFilePath,
+            success(res) {
+              wx.showToast({
+                title: '保存成功，赶快去分享吧^_^',
+                icon: 'none'
+              });
+              setTimeout(() => {
+                that.setData({
+                  hideScore: true,
+                });
+              }, 2000);
+            }
+          });
+        }
+      });
+    });
+  },
+
   doShare: function(e) {
 
+  },
+
+  cancelShare: function(e) {
+    this.setData({
+      hideScore: true
+    });
   },
 })

@@ -9,7 +9,8 @@
   <view bindtap="showScore" class="score">
   </view>
 
-  <modal class="modal" hidden="{{hideScore}}" bindconfirm="doShare" confirmText="立即分享">
-    <image src="./rankbg.png" alt="" class="rankbg"></image>
+  <modal class="modal" hidden="{{hideScore}}" bindconfirm="doShare" confirmText="保存到相册" bindcancel="cancelShare">
+    <!-- <image src="./rankbg.png" alt="" class="rankbg"></image> -->
+    <canvas class="rankbg" canvas-id="rankpic"></canvas>
   </modal>
 </view>
