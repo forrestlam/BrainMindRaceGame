@@ -1,5 +1,7 @@
 <!--index.wxml-->
-<view class="container">
+<view>
+  <image src="{{avatarUrl}}" class="avatar"></image>
+  <text class="nickname">{{nickName}}</text>
   <!-- 扫码 -->
   <button open-type="getUserInfo" bindgetuserinfo="doScan" class="scan">
   </button>

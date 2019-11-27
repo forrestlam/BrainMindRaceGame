@@ -10,6 +10,7 @@ from pythonosc import udp_client
 import urllib.request
 import json
 import io
+import threading
 
 event = multiprocessing.Event()
 
@@ -76,7 +77,15 @@ def start_osc(ip, port, info):
     server.serve_forever()    
 
 def terminate():
-    global oscProcess
+    global oscProcess, clientId, connectUser
+    if connectUser:
+        response = urllib.request.urlopen('https://forrestlin.cn/games/closeConnection/%s/%s'%(clientId, connectUser['userId']))
+        res = response.read().decode('utf-8')
+        resJson = json.loads(res)
+        if not resJson['success']:
+            print('Failed to close connection, reason: %s'%resJson['errMsg'])
+        else:
+            print('Succeed to close connection')
     pygame.quit()
     oscProcess.terminate()
     sys.exit()
@@ -117,7 +126,9 @@ def uploadScore(score):
         res = response.read().decode('utf-8')
         resJson = json.loads(res)
         if not resJson['success']:
-            print('Failed to upload score')
+            print('Failed to upload score, reason: %s'%resJson['errMsg'])
+        else:
+            print('Succeed to upload score')
 
 def game():
     global playerRect, gameParams, count, connectUser, clientId
@@ -359,7 +370,8 @@ def game():
                     topScore = score
                 gameOverSound.stop()
                 # upload the scroe
-                uploadScore(score)
+                t = threading.Thread(target=uploadScore, args=(score,))
+                t.start()
                 break
 
             # Check if any of the star have hit the player.
