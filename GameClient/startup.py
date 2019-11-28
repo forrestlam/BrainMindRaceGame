@@ -84,7 +84,8 @@ def intro():
     clientImg = pygame.transform.scale(clientImg, (WINDOW_WIDTH, WINDOW_WIDTH))
     screen.blit(clientImg, (0, 0))
 
-    font = pygame.font.SysFont('simsunnsimsun', FONT_SIZE)
+    # font = pygame.font.SysFont('simsunnsimsun', FONT_SIZE)
+    font = pygame.font.Font('./fonts/WenCangShuFang-2.ttf', FONT_SIZE)
     drawText(u'扫码进入游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 6) / 2, 450)
 
     pygame.display.update()
