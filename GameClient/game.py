@@ -18,6 +18,8 @@ WINDOWWIDTH = 450
 WINDOWHEIGHT = 800
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
+MASKCOLOR = (0, 0, 0, 180)
+WHITECOLOR = (255, 255, 255)
 FPS = 60
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
@@ -127,8 +129,8 @@ def playerHasHitStar(playerRect, stars):
             return True
     return False    
 
-def drawText(text, font, surface, x, y):
-    textobj = font.render(text, 1, TEXTCOLOR)
+def drawText(text, font, surface, x, y, textColor=TEXTCOLOR):
+    textobj = font.render(text, 1, textColor)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
@@ -157,7 +159,10 @@ def game():
 
     # fonts
     font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 20)
-    appleFont = pygame.font.Font("./fonts/PingFang-Jian-ChangGuiTi-2.ttf", 30)
+    appleFont = pygame.font.Font("./fonts/PingFang-Jian-ChangGuiTi-2.ttf", 28)
+    appleTipsFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 14)
+    appleTitleFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 16)
+    scoreFont = pygame.font.Font('./fonts/TTTGB-Medium.ttf', 12)
 
     # sounds
     gameOverSound = pygame.mixer.Sound('music/crash.wav')
@@ -172,16 +177,16 @@ def game():
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
     # load the player avatar and nickname
-    # avatarImg, nickName = None, "匿名玩家"
-    # if connectUser:
-    #     print(connectUser)
-    #     avatarUrl = connectUser['avatar']
-    #     avatarStr = urllib.request.urlopen(avatarUrl).read()
-    #     avatarImg = pygame.image.load(io.BytesIO(avatarStr))
-    #     avatarImg = pygame.transform.scale(avatarImg, (50, 50))
-    #     nickName = connectUser['nickname']
-    # else:
-    #     avatarImg = pygame.image.load('image/user_unlogin.png')
+    avatarImg, nickName = None, "匿名玩家"
+    if connectUser:
+        print(connectUser)
+        avatarUrl = connectUser['avatar']
+        avatarStr = urllib.request.urlopen(avatarUrl).read()
+        avatarImg = pygame.image.load(io.BytesIO(avatarStr))
+        nickName = connectUser['nickname']
+    else:
+        avatarImg = pygame.image.load('image/user_unlogin.png')
+    avatarImg = pygame.transform.scale(avatarImg, (50, 50))
 
     playerRect = playerImage.get_rect()        
     shoe1 = pygame.image.load('image/shoe1.png')
@@ -416,16 +421,29 @@ def game():
         #pygame.mixer.music.stop()
         count=count-1        
         time.sleep(1)
-        if (count==0):
-            laugh.play()
-        drawText('Game over', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3))
-        drawText('Press any key to play again.', font, windowSurface, (WINDOWWIDTH / 3) - 80, (WINDOWHEIGHT / 3) + 30)
+        maskSurface = windowSurface.convert_alpha() #important, can not fill directly
+        maskSurface.fill(MASKCOLOR)
+        windowSurface.blit(maskSurface, (0, 0))
+        drawText('游戏结束，可在小程序查看分享', appleTipsFont, windowSurface, (WINDOWWIDTH - 190) / 2, 93)
+        drawText('你的游戏记录', appleTipsFont, windowSurface, (WINDOWWIDTH - 90) / 2, 118)
+        windowSurface.blit(scoreBg, ((WINDOWWIDTH - 313) / 2, 160))
+        drawText('---  本局脑波图  ---', appleTitleFont, windowSurface, (WINDOWWIDTH - 160) / 2, 175)
+        windowSurface.blit(avatarImg, ((WINDOWWIDTH - 50) / 2, 210))
+        typeId = min(score, 100) / 20 + 1
+        if score >= 100:
+            typeId = 6
+        typeImg = pygame.image.load('./image/type%d.png'%typeId)
+        typeImg = pygame.transform.scale(typeImg, (130, 24))
+        windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, 280))
+        drawText("游戏得分: %d分  专注度: %d分"%(score, 80), scoreFont, windowSurface, 145, 315)
+        windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 158) / 2, 565), (158, 50)))
+        drawText('再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 120) / 2, 570, (102, 143, 15))
         pygame.display.update()
         time.sleep(2)
         waitForPlayerToPressKey()
         starttime = int(time.time())
-        endtime = int(starttime + GAMEDURATION)
-        count=3        
+        endtime = int(starttime + GAMEDURATION)      
+        score = 0
 
 def loop_event():
     global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X
