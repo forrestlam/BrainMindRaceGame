@@ -156,7 +156,8 @@ def game():
     pygame.mouse.set_visible(False)
 
     # fonts
-    font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 30)
+    font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 20)
+    appleFont = pygame.font.Font("./fonts/PingFang-Jian-ChangGuiTi-2.ttf", 30)
 
     # sounds
     gameOverSound = pygame.mixer.Sound('music/crash.wav')
@@ -188,6 +189,13 @@ def game():
     barriers = [car2]
     shoes = [shoe1, shoe2]
     background = pygame.image.load('image/game_bg.jpg')
+    leftupBg = pygame.image.load('image/leftup_bg.png')
+    leftupBg = pygame.transform.scale(leftupBg, (119, 63))
+    rightupBg = pygame.image.load('image/rightup_bg.png')
+    rightupBg = pygame.transform.scale(rightupBg, (62, 63))
+    scoreBg = pygame.image.load('image/score_bg.png')
+    scoreBg = pygame.transform.scale(scoreBg, (313, 431))
+    scoreShoe = pygame.transform.scale(shoe2, (50, 50))
 
     # "Start" screen
     drawText('Press any key', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
@@ -271,19 +279,19 @@ def game():
                 
             if baddieAddCounter == gameParams['addNewBaddieRate']:
                 baddieAddCounter = 0
-                baddieSize = 50
-                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0 - 45, 46, 49),
+                baddieSize = 54
+                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0, 56, 60),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(barriers), (46, 49)),
+                            'surface':pygame.transform.scale(random.choice(barriers), (56, 60)),
                             }
                 baddies.append(newBaddie)
 
             if starAddCounter == gameParams['addNewStarRate']:
                 starAddCounter = 0
-                starSize = 58
-                newStar = {'rect': pygame.Rect(random.randint(55, 395 - starSize), 0 - 35, 58, 39),
+                starSize = 67
+                newStar = {'rect': pygame.Rect(random.randint(55, 395 - starSize), 0, 67, 67),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(shoes), (58, 39)),
+                            'surface':pygame.transform.scale(random.choice(shoes), (67, 67)),
                             }
                 stars.append(newStar)
 
@@ -355,9 +363,9 @@ def game():
 
             # Draw the score and top score.            
             # drawText('Score: %s' % (score), font, windowSurface, 310, 0)
-            # curtime = int(time.time())
-            # if (endtime - curtime <= 0):
-            #     break
+            curtime = int(time.time())
+            if (endtime - curtime <= 0):
+                break
             # else:
             #     drawText('Time Elapse: %s' % (endtime - curtime), font, windowSurface,310, 20)
             # drawText('Top Score: %s' % (topScore), font, windowSurface,310, 40)
@@ -374,8 +382,11 @@ def game():
             for s in stars:
                 windowSurface.blit(s['surface'], s['rect'])                
 
-            
-
+            windowSurface.blit(leftupBg, (0, 0))
+            windowSurface.blit(scoreShoe, (3, 5))
+            drawText('X %d'%score, font, windowSurface, 56, 24)
+            windowSurface.blit(rightupBg, (WINDOWWIDTH - 62, 0))
+            drawText('%d'%(endtime - curtime), font, windowSurface, WINDOWWIDTH - 40, 24)
             # windowSurface.blit(avatarImg, (10, 10))
             # drawText(nickName, font, windowSurface, 10, 65)              
 
