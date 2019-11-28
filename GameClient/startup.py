@@ -43,8 +43,10 @@ def terminate():
     global connectUser, requestFlag
     pygame.quit()
     requestFlag = False
-    if connectUser != None:
-        startGame(connectUser, clientId)
+    tmpUser = connectUser
+    connectUser = None
+    if tmpUser != None:
+        startGame(tmpUser, clientId, intro)
     else:
         quit()
 
@@ -75,7 +77,8 @@ def isReadyToPlay():
         time.sleep(2)
 
 def intro():
-    global clientId, connectUser
+    global clientId, connectUser, requestFlag
+    requestFlag = True
     pygame.init()
     pygame.display.set_caption('意念滑板赛')
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -90,7 +93,8 @@ def intro():
     qrBgImg = pygame.transform.scale(qrBgImg, (QRCODE_BG_WIDTH, QRCODE_BG_HEIGHT))
     screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345))
 
-    clientId = genClientId()
+    if clientId == None:
+        clientId = genClientId()
     qrImg = qrcode.make('alicia:%s'%clientId)
     qrImg.save('clientId.png')
     clientImg = pygame.image.load('clientId.png')
