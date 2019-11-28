@@ -11,7 +11,6 @@ import urllib.request
 import json
 import io
 import threading
-import startup
 
 event = multiprocessing.Event()
 
@@ -90,7 +89,7 @@ def terminate():
     pygame.quit()
     oscProcess.terminate()
     # go back the startup page
-    startup.intro()
+    # startup.intro()
     # sys.exit()
 
 def waitForPlayerToPressKey():
