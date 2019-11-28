@@ -22,8 +22,6 @@ FPS = 60
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
 BADDIESPEED = 8
-#MARGINLEFT = 54
-#MARGINRIGHT = 340
 MINADDNEWBADDIERATE = 107
 MAXADDNEWBADDIERATE = 87
 MINADDNEWSTARRATE = 20
@@ -31,6 +29,8 @@ MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
 GAMEDURATION = 60 # game duration
+
+IMAGE_WIDTH = 45
 
 count=3
 
@@ -49,23 +49,29 @@ returnCallback = None
 PLAYER_MIN_X = 55
 PLAYER_MAX_X = 395
 
+def push_beta(beta, value):
+    beta.insert(len(beta), value)
+    beta.remove(beta[0])
+    print(beta)
+
 def concen_handler(unused_addr, args, value):
-    #speed = args[0]['speed']
-    #print(value)
-    #speed = int(((value + 20) / 100) * 20)
-    speed = value * 20
+    speed = (0.8-value) * 30
+    # update beta values
+    beta = args[0]['beta']
+    beta.insert(len(beta), value)
+    beta.remove(beta[0])
+    args[0]['beta'] = beta
+    # calculate speed
     if speed < 8:
         speed = 8
-    if speed > 20:
-        speed = 20
-    print(speed)
+    if speed > 30:
+        speed = 30
     args[0]['speed'] = speed
     event.set()
     
 def acc_handler(unused_addr, args, x, y, z):
     # normalize y
     global WINDOWWIDTH
-    #left = args[0]['left']
     rate = (y - MINY) / (MAXY - MINY)
     if rate > 1:
         rate = 1
@@ -78,7 +84,7 @@ def acc_handler(unused_addr, args, x, y, z):
 def start_osc(ip, port, info):
     dispatcher = dsp.Dispatcher()
     #dispatcher.map("/muse/algorithm/concentration", concen_handler, info)
-    dispatcher.map("/muse/elements/beta_absolute", concen_handler, info)
+    dispatcher.map("/muse/elements/delta_absolute", concen_handler, info)
     dispatcher.map("/muse/acc", acc_handler, info)
 
     server = osc_server.ThreadingOSCUDPServer(
@@ -127,6 +133,12 @@ def playerHasHitStar(playerRect, stars):
             return True
     return False    
 
+def drawRect(surface):
+    rect = pygame.draw.rect(surface, (129, 0, 26), pygame.Rect(0, 0, WINDOWWIDTH-35, 62))
+    rect.topleft = (0, 0)
+    pygame.display.flip()
+
+
 def drawText(text, font, surface, x, y):
     textobj = font.render(text, 1, TEXTCOLOR)
     textrect = textobj.get_rect()
@@ -143,6 +155,24 @@ def uploadScore(score):
             print('Failed to upload score, reason: %s'%resJson['errMsg'])
         else:
             print('Succeed to upload score')
+
+
+def drawLines(surface):
+    global gameParams, WINDOWHEIGHT
+    y_data = gameParams['beta']
+    max_y = 40
+    min_x = 120
+    max_x = WINDOWWIDTH - 35
+    for i in range(len(y_data)):
+        y_data[i] = 10 + max_y * y_data[i]
+    x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
+    points = []
+    for i in range(len(y_data)):
+        points.append((x_data[i], y_data[i]))
+    linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
+    linerect.topleft = (0, 0)
+    pygame.display.flip()
+    
 
 def game():
     global playerRect, gameParams, count, connectUser, clientId
@@ -189,6 +219,8 @@ def game():
     barriers = [car2]
     shoes = [shoe1, shoe2]
     background = pygame.image.load('image/game_bg.jpg')
+    wavebg = pygame.image.load('image/wave_bg.png')
+    wavebg = pygame.transform.scale(wavebg, (450, 63))
     leftupBg = pygame.image.load('image/leftup_bg.png')
     leftupBg = pygame.transform.scale(leftupBg, (119, 63))
     rightupBg = pygame.image.load('image/rightup_bg.png')
@@ -200,6 +232,7 @@ def game():
     # "Start" screen
     drawText('Press any key', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
     drawText('And Enjoy', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3)+30)
+    #drawRect(windowSurface)
     pygame.display.update()
     starttime = int(time.time())
     endtime = int(starttime + GAMEDURATION)
@@ -382,6 +415,7 @@ def game():
             for s in stars:
                 windowSurface.blit(s['surface'], s['rect'])                
 
+            windowSurface.blit(wavebg, (0, 0))
             windowSurface.blit(leftupBg, (0, 0))
             windowSurface.blit(scoreShoe, (3, 5))
             drawText('X %d'%score, font, windowSurface, 56, 24)
@@ -409,6 +443,9 @@ def game():
             # Check if any of the star have hit the player.
             if playerHasHitStar(playerRect, stars):
                 score += 1
+
+            # Update brain wave image
+            drawLines(windowSurface)
 
             mainClock.tick(FPS)
 
@@ -442,11 +479,12 @@ def loop_event():
         event.clear()
 
 def main(user=None, cid=None, callback=None):
-    global gameParams, oscProcess, connectUser, clientId, returnCallback
+    global gameParams, oscProcess, connectUser, clientId, returnCallback, IMAGE_WIDTH
     gameParams = multiprocessing.Manager().dict()
     gameParams['speed'] = 8
     gameParams['left'] = WINDOWWIDTH/2
     gameParams['acc'] = 0
+    gameParams['beta'] = [0] * IMAGE_WIDTH
     gameParams['addNewBaddieRate'] = MINADDNEWBADDIERATE
     gameParams['addNewStarRate'] = MINADDNEWSTARRATE
 
