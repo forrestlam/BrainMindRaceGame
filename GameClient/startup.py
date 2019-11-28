@@ -11,11 +11,16 @@ import ssl
 import time
 import threading
 
-WINDOW_WIDTH = 400
-WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 450
+WINDOW_HEIGHT = 800
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
+
+QRCODE_BG_WIDTH = 267
+QRCODE_BG_HEIGHT = 267
+QRCODE_WIDTH = 216
+QRCODE_HEIGHT = 216
 
 startGame = game.main
 clientId = None
@@ -44,7 +49,7 @@ def terminate():
         quit()
 
 def drawText(text, font, surface, x, y):
-    textobj = font.render(text, 1, BLACK)
+    textobj = font.render(text, 1, WHITE)
     textrect = textobj.get_rect()
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
@@ -72,21 +77,29 @@ def isReadyToPlay():
 def intro():
     global clientId, connectUser
     pygame.init()
-    pygame.display.set_caption('意念滑板')
+    pygame.display.set_caption('意念滑板赛')
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
+
+    bgImg = pygame.image.load('image/startup_bg.jpg')
+    bgImg = pygame.transform.scale(bgImg, (WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen.blit(bgImg, (0, 0))
+
+    qrBgImg = pygame.image.load('image/qrcode_bg.png')
+    qrBgImg = pygame.transform.scale(qrBgImg, (QRCODE_BG_WIDTH, QRCODE_BG_HEIGHT))
+    screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345))
 
     clientId = genClientId()
     qrImg = qrcode.make('alicia:%s'%clientId)
     qrImg.save('clientId.png')
     clientImg = pygame.image.load('clientId.png')
-    clientImg = pygame.transform.scale(clientImg, (WINDOW_WIDTH, WINDOW_WIDTH))
-    screen.blit(clientImg, (0, 0))
+    clientImg = pygame.transform.scale(clientImg, (QRCODE_WIDTH, QRCODE_HEIGHT))
+    screen.blit(clientImg, ((WINDOW_WIDTH - QRCODE_WIDTH) / 2, 370))
 
     # font = pygame.font.SysFont('simsunnsimsun', FONT_SIZE)
-    font = pygame.font.Font('./fonts/WenCangShuFang-2.ttf', FONT_SIZE)
-    drawText(u'扫码进入游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 6) / 2, 450)
+    font = pygame.font.Font('./fonts/TTTGB-Medium.ttf', FONT_SIZE)
+    drawText(u'小程序扫码开始游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 9) / 2, 640)
 
     pygame.display.update()
 

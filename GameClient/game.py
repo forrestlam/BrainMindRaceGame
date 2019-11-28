@@ -11,6 +11,7 @@ import urllib.request
 import json
 import io
 import threading
+import startup
 
 event = multiprocessing.Event()
 
@@ -88,7 +89,9 @@ def terminate():
             print('Succeed to close connection')
     pygame.quit()
     oscProcess.terminate()
-    sys.exit()
+    # go back the startup page
+    startup.intro()
+    # sys.exit()
 
 def waitForPlayerToPressKey():
     while True:
@@ -138,7 +141,7 @@ def game():
     pygame.init()
     mainClock = pygame.time.Clock()
     windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-    pygame.display.set_caption('car race')
+    pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
 
     # fonts
