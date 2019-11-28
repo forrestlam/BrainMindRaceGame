@@ -95,7 +95,8 @@ def terminate():
     # go back the startup page
     if returnCallback:
         returnCallback()
-    sys.exit()
+    else:
+        sys.exit()
 
 def waitForPlayerToPressKey():
     while True:
@@ -159,7 +160,7 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
-    playerImage = pygame.transform.scale(playerImage, (54, 73))
+    playerImage = pygame.transform.scale(playerImage, (94, 82))
 
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
