@@ -16,6 +16,10 @@ Page({
     localAvatarUrl: './user-unlogin.png'
   },
 
+  context2d: undefined,
+  canvasWidth: 0,
+  canvasHeight: 0,
+
   setUserInfo: function(res) {
     console.log(res);
     this.setData({
@@ -180,7 +184,16 @@ Page({
             hideScore: false
           });
           // this.drawSharePic(res.data.result.maxScore, res.data.result.concen);
-          this.drawSharePic(80, 90);
+          var topScore = res.data.result.maxScore;
+          var concen = res.data.result.concen;
+          var waves = res.data.result.waves;
+          if (topScore == undefined || concen == undefined || waves == undefined) {
+            // make fake score
+            topScore = 80;
+            concen = 90;
+            waves = [5, 6, 8, 10, 8, 4, 3, 5, 3, 7, 5, 6, 8, 10, 8, 4, 3, 5, 3, 7];
+          }
+          this.drawSharePic(topScore, concen, waves);
           // wx.showToast({
           //   title: '最高成绩是' + res.data.result.maxScore,
           // });
@@ -194,41 +207,69 @@ Page({
     })
   },
 
-  drawSharePic: function(topScore, concen) {
+  drawSharePic: function(topScore, concen, waves) {
     var that = this;
     var systemInfo = wx.getSystemInfoSync();
     var windowWidth = systemInfo.windowWidth;
     var windowHeight = systemInfo.windowHeight;
     var canvasWidth = 0.725 * windowWidth;
     var canvasHeight = 0.6 * windowHeight;
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
     var context = wx.createCanvasContext("rankpic");
+    this.context2d = context;
+    var gap = windowWidth * 0.05;
+    var scale = windowWidth / 320;
     // debugger;
     context.drawImage("./rankbg.png", 0, 0, canvasWidth, canvasHeight);
-    context.drawImage('./top-score.png', (canvasWidth - 80) / 2, 15, 80, 10);
-    var avatarWidth = 40, avatarHeight = 40;
-    context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2, 40, avatarWidth, avatarHeight);
-    var typeWidth = 522/5, typeHeight = 96/5;
+    var topScoreWidth = 106 * scale, topScoreHeight = 13 * scale;
+    context.drawImage('./top-score.png', (canvasWidth - topScoreWidth) / 2, 
+      gap, topScoreWidth, topScoreHeight);
+    var avatarWidth = 40 * scale, avatarHeight = 40 * scale;
+    context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2, 
+      gap * 2 + topScoreHeight, avatarWidth, avatarHeight);
+    var typeWidth = 522/4 * scale, typeHeight = 96/4 * scale;
     var typeId = topScore / 20 + 1;
     if (topScore > 100) {
       typeId = 6;
     }
-    context.drawImage('./type'+typeId+'.png', (canvasWidth - typeWidth) / 2, 40 + avatarHeight + 15, typeWidth, typeHeight);
+    context.drawImage('./type'+typeId+'.png', (canvasWidth - typeWidth) / 2, 
+      gap * 3 + avatarHeight + topScoreHeight, typeWidth, typeHeight);
     context.setFontSize(12);
     context.setFillStyle('white');
-    context.fillText("游戏得分: " + topScore + '分', (canvasWidth - typeWidth) / 2 - 30, 65 + avatarHeight + typeHeight + 10);
-    context.fillText("专注度: " + concen + '分', canvasWidth / 2 + 10, 65 + avatarHeight + typeHeight + 10);
-    context.draw(true, () => {
+    context.fillText("游戏得分: " + topScore + '分', (canvasWidth - typeWidth) / 2 - 23, 
+      gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15);
+    context.fillText("专注度: " + concen + '分', canvasWidth / 2 + 10, 
+      gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15);
+
+    // draw waves
+    var waveX = 20, waveY = gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15 + 30, waveWidth = canvasWidth - waveX * 2, waveHeight = canvasHeight - waveY;
+    // draw max 20 wave
+    context.setStrokeStyle('white');
+    var count = Math.min(waves.length, 20);
+    context.beginPath()
+    context.moveTo(waveX, waveY + waveHeight / 2);
+    var waveUnitWidth = waveWidth / count;
+    for (var i = 0; i < count; i++) {
+      var waveValue = waves[i];
+      waveValue = Math.max(waveValue, 0);
+      waveValue = Math.min(waveValue, 10);
+      context.lineTo(waveX + waveUnitWidth * (i + 1), waveY + (10 - waveValue) * waveHeight / 10);
+    }
+    context.stroke()
+    context.draw();
+  },
+
+  doShare: function(e) {
+    var that = this;
+    if (this.context2d) {
       wx.canvasToTempFilePath({
-        x: 100,
-        y: 200,
-        width: 50,
-        height: 50,
-        destWidth: 100,
-        destHeight: 100,
+        x: 0,
+        y: 0,
+        destWidth: this.canvasWidth * 3,
+        destHeight: this.canvasHeight * 3,
         canvasId: 'rankpic',
         success(res) {
-          // debugger;
-          // console.log(res.tempFilePath)
           wx.saveImageToPhotosAlbum({
             filePath: res.tempFilePath,
             success(res) {
@@ -245,11 +286,7 @@ Page({
           });
         }
       });
-    });
-  },
-
-  doShare: function(e) {
-
+    }
   },
 
   cancelShare: function(e) {

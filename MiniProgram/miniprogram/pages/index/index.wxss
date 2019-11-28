@@ -39,7 +39,6 @@ page {
   height: 35px;
   margin-left: 15px;
   margin-top: 15px;
-  border-radius: 17.5px;
 }
 
 .nickname {
