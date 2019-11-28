@@ -22,8 +22,8 @@ FPS = 60
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
 BADDIESPEED = 8
-MARGINLEFT = 54
-MARGINRIGHT = 340
+#MARGINLEFT = 54
+#MARGINRIGHT = 340
 MINADDNEWBADDIERATE = 107
 MAXADDNEWBADDIERATE = 87
 MINADDNEWSTARRATE = 20
@@ -49,10 +49,15 @@ PLAYER_MIN_X = 55
 PLAYER_MAX_X = 395
 
 def concen_handler(unused_addr, args, value):
-    speed = args[0]['speed']
-    speed = int((value / 100) * 20)
+    #speed = args[0]['speed']
+    #print(value)
+    #speed = int(((value + 20) / 100) * 20)
+    speed = value * 20
     if speed < 8:
         speed = 8
+    if speed > 20:
+        speed = 20
+    print(speed)
     args[0]['speed'] = speed
     event.set()
     
@@ -66,12 +71,13 @@ def acc_handler(unused_addr, args, x, y, z):
     if rate < 0:
         rate = 0
     x = WINDOWWIDTH * rate
-    args[0]['left'] = MARGINLEFT + x
+    args[0]['left'] = PLAYER_MIN_X + x
     event.set()
 
 def start_osc(ip, port, info):
     dispatcher = dsp.Dispatcher()
-    dispatcher.map("/muse/algorithm/concentration", concen_handler, info)
+    #dispatcher.map("/muse/algorithm/concentration", concen_handler, info)
+    dispatcher.map("/muse/elements/beta_absolute", concen_handler, info)
     dispatcher.map("/muse/acc", acc_handler, info)
 
     server = osc_server.ThreadingOSCUDPServer(
@@ -408,17 +414,17 @@ def game():
         count=3        
 
 def loop_event():
-    global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE
+    global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X
     while True:
         event.wait()
         # 更新数据
         if playerRect is not None:
             BADDIESPEED = gameParams['speed']
             playerRect.left = gameParams['left']            
-            if playerRect.left < MARGINLEFT:
-                playerRect.left = MARGINLEFT
-            if playerRect.left > MARGINRIGHT:
-                playerRect.left = MARGINRIGHT
+            if playerRect.left < PLAYER_MIN_X:
+                playerRect.left = PLAYER_MIN_X
+            if playerRect.right > PLAYER_MAX_X:
+                playerRect.right = PLAYER_MAX_X
         event.clear()
 
 def main(user=None, cid=None):
