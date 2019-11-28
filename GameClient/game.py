@@ -14,16 +14,16 @@ import threading
 
 event = multiprocessing.Event()
 
-WINDOWWIDTH = 1000
-WINDOWHEIGHT = 600
+WINDOWWIDTH = 450
+WINDOWHEIGHT = 800
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 FPS = 60
 BADDIEMINSIZE = 10
 BADDIEMAXSIZE = 40
 BADDIESPEED = 8
-MARGINLEFT = 310
-MARGINRIGHT = 640
+MARGINLEFT = 54
+MARGINRIGHT = 340
 MINADDNEWBADDIERATE = 107
 MAXADDNEWBADDIERATE = 87
 MINADDNEWSTARRATE = 20
@@ -45,11 +45,14 @@ MAXY = 1
 connectUser = None
 clientId = None
 
+PLAYER_MIN_X = 55
+PLAYER_MAX_X = 395
+
 def concen_handler(unused_addr, args, value):
     speed = args[0]['speed']
     speed = int((value / 100) * 20)
-    if speed < 1:
-        speed = 1
+    if speed < 8:
+        speed = 8
     args[0]['speed'] = speed
     event.set()
     
@@ -62,8 +65,8 @@ def acc_handler(unused_addr, args, x, y, z):
         rate = 1
     if rate < 0:
         rate = 0
-    x = 380 * rate
-    args[0]['left'] = 310 + x
+    x = WINDOWWIDTH * rate
+    args[0]['left'] = MARGINLEFT + x
     event.set()
 
 def start_osc(ip, port, info):
@@ -90,7 +93,7 @@ def terminate():
     oscProcess.terminate()
     # go back the startup page
     # startup.intro()
-    # sys.exit()
+    sys.exit()
 
 def waitForPlayerToPressKey():
     while True:
@@ -144,7 +147,7 @@ def game():
     pygame.mouse.set_visible(False)
 
     # fonts
-    font = pygame.font.SysFont(None, 30)
+    font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 30)
 
     # sounds
     gameOverSound = pygame.mixer.Sound('music/crash.wav')
@@ -154,32 +157,31 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
+    playerImage = pygame.transform.scale(playerImage, (54, 73))
 
-    car2 = pygame.image.load('image/car2.png')
-    car3 = pygame.image.load('image/car3.png')
-    car4 = pygame.image.load('image/car4.png')
+    car2 = pygame.image.load('image/shit.png')
+    # car3 = pygame.image.load('image/shoe2.png')
     # load the player avatar and nickname
-    avatarImg, nickName = None, "匿名玩家"
-    if connectUser:
-        print(connectUser)
-        avatarUrl = connectUser['avatar']
-        avatarStr = urllib.request.urlopen(avatarUrl).read()
-        avatarImg = pygame.image.load(io.BytesIO(avatarStr))
-        avatarImg = pygame.transform.scale(avatarImg, (50, 50))
-        nickName = connectUser['nickname']
-    else:
-        avatarImg = pygame.image.load('image/user_unlogin.png')
+    # avatarImg, nickName = None, "匿名玩家"
+    # if connectUser:
+    #     print(connectUser)
+    #     avatarUrl = connectUser['avatar']
+    #     avatarStr = urllib.request.urlopen(avatarUrl).read()
+    #     avatarImg = pygame.image.load(io.BytesIO(avatarStr))
+    #     avatarImg = pygame.transform.scale(avatarImg, (50, 50))
+    #     nickName = connectUser['nickname']
+    # else:
+    #     avatarImg = pygame.image.load('image/user_unlogin.png')
 
     playerRect = playerImage.get_rect()        
-    starImage = pygame.image.load('image/star.png')
-    sample = [car3, car4, car2]
-    wallLeft = pygame.image.load('image/left.png')
-    wallRight = pygame.image.load('image/right.png')
-    MARGINLEFT = wallLeft.get_rect().width
-    MARGINRIGHT = WINDOWWIDTH - wallRight.get_rect().width - playerRect.width
+    shoe1 = pygame.image.load('image/shoe1.png')
+    shoe2 = pygame.image.load('image/shoe2.png')
+    barriers = [car2]
+    shoes = [shoe1, shoe2]
+    background = pygame.image.load('image/game_bg.jpg')
 
     # "Start" screen
-    drawText('Press any key to start the game.', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
+    drawText('Press any key', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
     drawText('And Enjoy', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3)+30)
     pygame.display.update()
     starttime = int(time.time())
@@ -199,7 +201,7 @@ def game():
         stars = []
         walls = []
         score = 0
-        playerRect.topleft = (WINDOWWIDTH / 2, WINDOWHEIGHT - playerRect.height)
+        playerRect.topleft = ((WINDOWWIDTH - playerRect.width) / 2, WINDOWHEIGHT - playerRect.height)
         moveLeft = moveRight = moveUp = moveDown = False
         reverseCheat = slowCheat = False
         baddieAddCounter = 0
@@ -260,37 +262,43 @@ def game():
                 
             if baddieAddCounter == gameParams['addNewBaddieRate']:
                 baddieAddCounter = 0
-                baddieSize = 30
-                newBaddie = {'rect': pygame.Rect(random.randint(317, 650), 0 - baddieSize, 23, 47),
+                baddieSize = 50
+                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0 - 45, 46, 49),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(sample), (23, 47)),
+                            'surface':pygame.transform.scale(random.choice(barriers), (46, 49)),
                             }
                 baddies.append(newBaddie)
 
             if starAddCounter == gameParams['addNewStarRate']:
                 starAddCounter = 0
-                newStar = {'rect': pygame.Rect(random.randint(317, 650), 0 - 40, 40, 40),
+                starSize = 58
+                newStar = {'rect': pygame.Rect(random.randint(55, 395 - starSize), 0 - 35, 58, 39),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(starImage, (40, 40)),
+                            'surface':pygame.transform.scale(random.choice(shoes), (58, 39)),
                             }
                 stars.append(newStar)
 
-            sideLeft= {'rect': pygame.Rect(0,0,303,600),
+            # sideLeft= {'rect': pygame.Rect(0,0,303,600),
+            #         'speed': BADDIESPEED,
+            #         'surface':pygame.transform.scale(wallLeft, (303, 599)),
+            #         }
+            # sideRight= {'rect': pygame.Rect(674,0,303,600),
+            #         'speed': BADDIESPEED,
+            #         'surface':pygame.transform.scale(wallRight, (303, 599)),
+            #         }
+            # walls.append(sideLeft)
+            # walls.append(sideRight)
+            background_wall = {'rect': pygame.Rect(0, 0, WINDOWWIDTH, WINDOWHEIGHT),
                     'speed': BADDIESPEED,
-                    'surface':pygame.transform.scale(wallLeft, (303, 599)),
+                    'surface':pygame.transform.scale(background, (WINDOWWIDTH, WINDOWHEIGHT)),
                     }
-            sideRight= {'rect': pygame.Rect(674,0,303,600),
-                    'speed': BADDIESPEED,
-                    'surface':pygame.transform.scale(wallRight, (303, 599)),
-                    }
-            walls.append(sideLeft)
-            walls.append(sideRight)
+            walls.append(background_wall)
                 
 
             # Move the player around.
-            if moveLeft and playerRect.left > 0:
+            if moveLeft and playerRect.left > PLAYER_MIN_X:
                 playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
-            if moveRight and playerRect.right < WINDOWWIDTH:
+            if moveRight and playerRect.right < PLAYER_MAX_X:
                 playerRect.move_ip(PLAYERMOVERATE, 0)
             if moveUp and playerRect.top > 0:
                 playerRect.move_ip(0, -1 * PLAYERMOVERATE)
@@ -313,13 +321,13 @@ def game():
                 elif slowCheat:
                     s['rect'].move_ip(0, 1)
 
-            for s in walls:
-                if not reverseCheat and not slowCheat:
-                    s['rect'].move_ip(0, BADDIESPEED)
-                elif reverseCheat:
-                    s['rect'].move_ip(0, -5)
-                elif slowCheat:
-                    s['rect'].move_ip(0, 1)                    
+            # for s in walls:
+            #     if not reverseCheat and not slowCheat:
+            #         s['rect'].move_ip(0, BADDIESPEED)
+            #     elif reverseCheat:
+            #         s['rect'].move_ip(0, -5)
+            #     elif slowCheat:
+            #         s['rect'].move_ip(0, 1)                    
 
             for b in baddies:
                 if b['rect'].top > WINDOWHEIGHT:
@@ -334,18 +342,21 @@ def game():
                     walls.remove(s)
 
             # Draw the game world on the window.
-            windowSurface.fill(BACKGROUNDCOLOR)
+            # windowSurface.fill(BACKGROUNDCOLOR)
 
             # Draw the score and top score.            
-            drawText('Score: %s' % (score), font, windowSurface, 310, 0)
-            curtime = int(time.time())
-            if (endtime - curtime <= 0):
-                break
-            else:
-                drawText('Time Elapse: %s' % (endtime - curtime), font, windowSurface,310, 20)
-            drawText('Top Score: %s' % (topScore), font, windowSurface,310, 40)
-            drawText('Rest Life: %s' % (count), font, windowSurface, 310, 60)
-            drawText('Speed: %s' % (gameParams['speed']), font, windowSurface, 310, 80)            
+            # drawText('Score: %s' % (score), font, windowSurface, 310, 0)
+            # curtime = int(time.time())
+            # if (endtime - curtime <= 0):
+            #     break
+            # else:
+            #     drawText('Time Elapse: %s' % (endtime - curtime), font, windowSurface,310, 20)
+            # drawText('Top Score: %s' % (topScore), font, windowSurface,310, 40)
+            # drawText('Rest Life: %s' % (count), font, windowSurface, 310, 60)
+            # drawText('Speed: %s' % (gameParams['speed']), font, windowSurface, 310, 80)    
+            for s in walls:
+                windowSurface.blit(s['surface'], s['rect'])
+
             windowSurface.blit(playerImage, playerRect)
             
             for b in baddies:
@@ -354,11 +365,10 @@ def game():
             for s in stars:
                 windowSurface.blit(s['surface'], s['rect'])                
 
-            for s in walls:
-                windowSurface.blit(s['surface'], s['rect'])  
+            
 
-            windowSurface.blit(avatarImg, (10, 10))
-            drawText(nickName, font, windowSurface, 10, 65)              
+            # windowSurface.blit(avatarImg, (10, 10))
+            # drawText(nickName, font, windowSurface, 10, 65)              
 
             pygame.display.update()
 
