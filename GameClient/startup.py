@@ -25,8 +25,6 @@ requestFlag = True
 ssl._create_default_https_context = ssl._create_unverified_context
 
 def getMacAddress():
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
     mac=uuid.UUID(int = uuid.getnode()).hex[-12:]
     return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
@@ -58,6 +56,7 @@ def isReadyToPlay():
             response=urllib.request.urlopen('https://forrestlin.cn/games/isReadyToPlay/%s'%clientId)
             res = response.read().decode('utf-8')
             resJson = json.loads(res)
+            print(resJson)
             if resJson['success']: 
                 print('connect success, userId = %s\n'%resJson['user']['userId'])
                 connectUser = resJson['user']
@@ -73,7 +72,7 @@ def isReadyToPlay():
 def intro():
     global clientId, connectUser
     pygame.init()
-    pygame.display.set_caption('脑力滑板赛')
+    pygame.display.set_caption('意念滑板')
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
