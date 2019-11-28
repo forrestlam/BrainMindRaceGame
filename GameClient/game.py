@@ -44,6 +44,7 @@ MAXY = 1
 
 connectUser = None
 clientId = None
+returnCallback = None
 
 PLAYER_MIN_X = 55
 PLAYER_MAX_X = 395
@@ -86,7 +87,7 @@ def start_osc(ip, port, info):
     server.serve_forever()    
 
 def terminate():
-    global oscProcess, clientId, connectUser
+    global oscProcess, clientId, connectUser, returnCallback
     if connectUser:
         response = urllib.request.urlopen('https://forrestlin.cn/games/closeConnection/%s/%s'%(clientId, connectUser['userId']))
         res = response.read().decode('utf-8')
@@ -98,8 +99,10 @@ def terminate():
     pygame.quit()
     oscProcess.terminate()
     # go back the startup page
-    # startup.intro()
-    sys.exit()
+    if returnCallback:
+        returnCallback()
+    else:
+        sys.exit()
 
 def waitForPlayerToPressKey():
     while True:
@@ -163,7 +166,7 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
-    playerImage = pygame.transform.scale(playerImage, (54, 73))
+    playerImage = pygame.transform.scale(playerImage, (94, 82))
 
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
@@ -427,8 +430,8 @@ def loop_event():
                 playerRect.right = PLAYER_MAX_X
         event.clear()
 
-def main(user=None, cid=None):
-    global gameParams, oscProcess, connectUser, clientId
+def main(user=None, cid=None, callback=None):
+    global gameParams, oscProcess, connectUser, clientId, returnCallback
     gameParams = multiprocessing.Manager().dict()
     gameParams['speed'] = 8
     gameParams['left'] = WINDOWWIDTH/2
@@ -438,6 +441,7 @@ def main(user=None, cid=None):
 
     connectUser = user
     clientId = cid
+    returnCallback = callback
     
     thread.start_new_thread(loop_event, ())
     parser = argparse.ArgumentParser()
