@@ -79,13 +79,13 @@ def concen_handler(unused_addr, args, value):
     
 def acc_handler(unused_addr, args, x, y, z):
     # normalize y
-    global WINDOWWIDTH
+    global WINDOWWIDTH, playerRect
     rate = (y - MINY) / (MAXY - MINY)
     if rate > 1:
         rate = 1
     if rate < 0:
         rate = 0
-    x = WINDOWWIDTH * rate
+    x = WINDOWWIDTH * rate - 60
     args[0]['left'] = PLAYER_MIN_X + x
     event.set()
 
@@ -125,11 +125,11 @@ def sampleAllData():
     step = int(len(ALL_DATA) / WHOLE_IMAGE_WIDTH)
     data = []
     for i in range(0, len(ALL_DATA), step):
-        data.append(ALL_DATA[i])
+        if len(data) >= WHOLE_IMAGE_WIDTH:
+            break
+        data.append(ALL_DATA[int(i)])
     ALL_DATA = data
-    print(len(ALL_DATA))
-    print(ALL_DATA)
-
+    
 def waitForPlayerToPressKey():
     while True:
         for event in pygame.event.get():
@@ -181,7 +181,8 @@ def drawLines(surface):
     max_y = 36
     points = []
     ALL_DATA.append(y_data[-1])
-    for i in range(len(y_data)):
+    r = len(x_data) if len(y_data) > len(x_data) else len(y_data)
+    for i in range(r):
         y_data[i] = max_y * y_data[i]
         points.append((x_data[i], y_data[i]))
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
@@ -192,11 +193,12 @@ def drawLines(surface):
 def drawWholeLines(surface):
     global gameParams, WINDOWHEIGHT, ALL_DATA
     points = []
-    baseline = 400
+    baseline = 350
     min_x = 120
     max_x = WINDOWWIDTH - 120
     x_data = list(range(min_x, max_x, int((max_x-min_x)/WHOLE_IMAGE_WIDTH)))
-    for i in range(len(ALL_DATA)):
+    r = len(x_data) if len(ALL_DATA) > len(x_data) else len(ALL_DATA)
+    for i in range(r):
         points.append((x_data[i], baseline + ALL_DATA[i] * 100))
     print(points)
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
@@ -230,7 +232,7 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
-    playerImage = pygame.transform.scale(playerImage, (94, 82))
+    playerImage = pygame.transform.scale(playerImage, (60, 70))
 
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
@@ -246,7 +248,7 @@ def game():
         avatarImg = pygame.image.load('image/user_unlogin.png')
     avatarImg = pygame.transform.scale(avatarImg, (50, 50))
 
-    playerRect = playerImage.get_rect()        
+    playerRect = playerImage.get_rect()
     shoe1 = pygame.image.load('image/shoe1.png')
     shoe2 = pygame.image.load('image/shoe2.png')
     barriers = [car2]
@@ -346,9 +348,9 @@ def game():
             if baddieAddCounter == gameParams['addNewBaddieRate']:
                 baddieAddCounter = 0
                 baddieSize = 54
-                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0, 56, 60),
+                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0, 56, 62),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(barriers), (56, 60)),
+                            'surface':pygame.transform.scale(random.choice(barriers), (56, 62)),
                             }
                 baddies.append(newBaddie)
 
