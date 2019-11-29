@@ -222,9 +222,11 @@ def game():
     scoreFont = pygame.font.Font('./fonts/TTTGB-Medium.ttf', 12)
 
     # sounds
-    gameOverSound = pygame.mixer.Sound('music/crash.wav')
-    pygame.mixer.music.load('music/skate1.mp3')
+    pygame.mixer.init()
+    gameOverSound = pygame.mixer.Sound('music/gameover.wav')
+    pygame.mixer.music.load('music/technicolordreams.mp3')
     laugh = pygame.mixer.Sound('music/laugh.wav')
+    reward = pygame.mixer.Sound('music/reward.wav')
 
 
     # images
@@ -277,6 +279,7 @@ def game():
     v=open("data/save.dat",'r')
     topScore = int(v.readline())
     v.close()
+    pygame.mixer.music.play(1, 0.0)
     while (count>0):
         # start of the game
         baddies = []
@@ -287,8 +290,7 @@ def game():
         moveLeft = moveRight = moveUp = moveDown = False
         reverseCheat = slowCheat = False
         baddieAddCounter = 0
-        starAddCounter = 0
-        #pygame.mixer.music.play(-1, 0.0)
+        starAddCounter = 0        
 
         while True: # the game loop
 
@@ -477,6 +479,7 @@ def game():
 
             # Check if any of the star have hit the player.
             if playerHasHitStar(playerRect, stars):
+                reward.play()
                 score += 1
 
             # Update brain wave image
