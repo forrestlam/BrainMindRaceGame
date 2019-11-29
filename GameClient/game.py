@@ -1,5 +1,4 @@
 import pygame, random, sys, os, time, math
-from itertools import islice
 from pygame.locals import *
 import _thread as thread
 import argparse
@@ -43,6 +42,8 @@ playerRect = None
 gameParams = None
 oscProcess = None
 
+concenList = []
+
 MINY = -0.5
 MAXY = 1
 
@@ -58,10 +59,7 @@ max_x = WINDOWWIDTH - 35
 x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
 ALL_DATA = []   
 
-concenList = []
-
 def concen_handler(unused_addr, args, value):
-    global concenList
     speed = (1-value) * 60
     # update beta values
     beta = args[0]['beta']
@@ -74,8 +72,8 @@ def concen_handler(unused_addr, args, value):
     if speed > 30:
         speed = 30
     args[0]['speed'] = speed
-    event.set()
-    concenList.append(value)
+    args[0]['concen'] = value * 100
+    event.set()    
     
 def acc_handler(unused_addr, args, x, y, z):
     # normalize y
@@ -193,14 +191,13 @@ def drawLines(surface):
 def drawWholeLines(surface):
     global gameParams, WINDOWHEIGHT, ALL_DATA
     points = []
-    baseline = 350
-    min_x = 120
-    max_x = WINDOWWIDTH - 120
+    baseline = 360
+    min_x = 125
+    max_x = WINDOWWIDTH - 125
     x_data = list(range(min_x, max_x, int((max_x-min_x)/WHOLE_IMAGE_WIDTH)))
     r = len(x_data) if len(ALL_DATA) > len(x_data) else len(ALL_DATA)
     for i in range(r):
         points.append((x_data[i], baseline + ALL_DATA[i] * 100))
-    print(points)
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
     pygame.display.flip()
@@ -507,6 +504,7 @@ def game():
         typeImg = pygame.transform.scale(typeImg, (130, 24))
         windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, 280))
         avgConcen = 80
+        print(concenList)
         if len(concenList) > 0:
             avgConcen = sum(concenList) / len(concenList)
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, 145, 315)
@@ -522,13 +520,14 @@ def game():
         concenList = []
 
 def loop_event():
-    global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X
+    global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X, concenList
     while True:
         event.wait()
         # 更新数据
         if playerRect is not None:
             BADDIESPEED = gameParams['speed']
-            playerRect.left = gameParams['left']            
+            concenList.append(gameParams['concen'])
+            playerRect.left = gameParams['left']
             if playerRect.left < PLAYER_MIN_X:
                 playerRect.left = PLAYER_MIN_X
             if playerRect.right > PLAYER_MAX_X:
@@ -544,11 +543,13 @@ def main(user=None, cid=None, callback=None):
     gameParams['beta'] = [0] * IMAGE_WIDTH
     gameParams['addNewBaddieRate'] = MINADDNEWBADDIERATE
     gameParams['addNewStarRate'] = MINADDNEWSTARRATE
+    gameParams['concen'] = []
+
+    concenList = []
 
     connectUser = user
     clientId = cid
     returnCallback = callback
-    concenList = [] #init concenlist
     
     thread.start_new_thread(loop_event, ())
     parser = argparse.ArgumentParser()
