@@ -56,6 +56,8 @@ def push_beta(beta, value):
     beta.remove(beta[0])
     print(beta)
 
+concenList = []
+
 def concen_handler(unused_addr, args, value):
     speed = (0.8-value) * 30
     # update beta values
@@ -70,6 +72,7 @@ def concen_handler(unused_addr, args, value):
         speed = 30
     args[0]['speed'] = speed
     event.set()
+    concenList.append(value)
     
 def acc_handler(unused_addr, args, x, y, z):
     # normalize y
@@ -144,7 +147,8 @@ def drawText(text, font, surface, x, y, textColor=TEXTCOLOR):
 def uploadScore(score):
     global clientId, connectUser
     if clientId != None and connectUser != None:
-        response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame/%s/%s/%d'%(clientId, connectUser['userId'], score))
+        response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame/%s/%s/%d/%d'%
+            (clientId, connectUser['userId'], score, sum(concenList) / len(concenList)))
         res = response.read().decode('utf-8')
         resJson = json.loads(res)
         if not resJson['success']:
@@ -475,6 +479,7 @@ def game():
         starttime = int(time.time())
         endtime = int(starttime + GAMEDURATION)      
         score = 0
+        concenList = []
 
 def loop_event():
     global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X
@@ -491,7 +496,7 @@ def loop_event():
         event.clear()
 
 def main(user=None, cid=None, callback=None):
-    global gameParams, oscProcess, connectUser, clientId, returnCallback, IMAGE_WIDTH
+    global gameParams, oscProcess, connectUser, clientId, returnCallback, IMAGE_WIDTH, concenList
     gameParams = multiprocessing.Manager().dict()
     gameParams['speed'] = 8
     gameParams['left'] = WINDOWWIDTH/2
@@ -503,6 +508,7 @@ def main(user=None, cid=None, callback=None):
     connectUser = user
     clientId = cid
     returnCallback = callback
+    concenList = [] #init concenlist
     
     thread.start_new_thread(loop_event, ())
     parser = argparse.ArgumentParser()

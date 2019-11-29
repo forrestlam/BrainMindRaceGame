@@ -18,10 +18,11 @@ router.get('/isReadyToPlay/:clientId', function(req, res) {
     }
 });
 
-router.get('/finishGame/:clientId/:userId/:score', function(req, res) {
+router.get('/finishGame/:clientId/:userId/:score/:concen', function(req, res) {
     var clientId = req.params.clientId;
     var score = req.params.score;
     var userId = req.params.userId;
+    var concen = req.params.concen;
     if (global.connections[clientId] && global.connections[clientId].userId == userId && users[userId]) {
         // delete global.connections[clientId];
         user = global.users[userId];
@@ -31,6 +32,7 @@ router.get('/finishGame/:clientId/:userId/:score', function(req, res) {
             global.user.maxScore = score;
         }
         global.user.lastScore = score;
+        global.user.concen = concen;
         res.send({'success': true});
     } else {
         res.send({'success': false, 'errMsg': 'connection is not legal.'});
