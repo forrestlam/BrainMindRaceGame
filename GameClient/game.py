@@ -30,7 +30,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 60 # game duration
+GAMEDURATION = 3 # game duration
 
 IMAGE_WIDTH = 45
 
@@ -59,6 +59,7 @@ def push_beta(beta, value):
 concenList = []
 
 def concen_handler(unused_addr, args, value):
+    global concenList
     speed = (0.8-value) * 30
     # update beta values
     beta = args[0]['beta']
@@ -144,11 +145,14 @@ def drawText(text, font, surface, x, y, textColor=TEXTCOLOR):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
-def uploadScore(score):
+def uploadScore(score, concenList):
     global clientId, connectUser
+    avgCon = 80
+    if len(concenList) > 0:
+        avgCon = sum(concenList) / len(concenList)
     if clientId != None and connectUser != None:
         response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame/%s/%s/%d/%d'%
-            (clientId, connectUser['userId'], score, sum(concenList) / len(concenList)))
+            (clientId, connectUser['userId'], score, avgCon))
         res = response.read().decode('utf-8')
         resJson = json.loads(res)
         if not resJson['success']:
@@ -175,7 +179,7 @@ def drawLines(surface):
     
 
 def game():
-    global playerRect, gameParams, count, connectUser, clientId
+    global playerRect, gameParams, count, connectUser, clientId, concenList
     starttime = None  # for timing
     endtime = None
     # set up pygame, the window, and the mouse cursor
@@ -401,6 +405,10 @@ def game():
             # drawText('Score: %s' % (score), font, windowSurface, 310, 0)
             curtime = int(time.time())
             if (endtime - curtime <= 0):
+                # time up
+                # upload the scroe
+                t = threading.Thread(target=uploadScore, args=(score,concenList))
+                t.start()
                 break
             # else:
             #     drawText('Time Elapse: %s' % (endtime - curtime), font, windowSurface,310, 20)
@@ -439,7 +447,7 @@ def game():
                     topScore = score
                 gameOverSound.stop()
                 # upload the scroe
-                t = threading.Thread(target=uploadScore, args=(score,))
+                t = threading.Thread(target=uploadScore, args=(score, concenList))
                 t.start()
                 break
 
@@ -470,7 +478,10 @@ def game():
         typeImg = pygame.image.load('./image/type%d.png'%typeId)
         typeImg = pygame.transform.scale(typeImg, (130, 24))
         windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, 280))
-        drawText("游戏得分: %d分  专注度: %d分"%(score, 80), scoreFont, windowSurface, 145, 315)
+        avgConcen = 80
+        if len(concenList) > 0:
+            avgConcen = sum(concenList) / len(concenList)
+        drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, 145, 315)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 158) / 2, 565), (158, 50)))
         drawText('再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 120) / 2, 570, (102, 143, 15))
         pygame.display.update()
