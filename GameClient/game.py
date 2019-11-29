@@ -1,4 +1,5 @@
 import pygame, random, sys, os, time, math
+from itertools import islice
 from pygame.locals import *
 import _thread as thread
 import argparse
@@ -30,9 +31,10 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 3 # game duration
+GAMEDURATION = 60 # game duration
 
 IMAGE_WIDTH = 45
+WHOLE_IMAGE_WIDTH = 60
 
 count=3
 
@@ -51,16 +53,16 @@ returnCallback = None
 PLAYER_MIN_X = 55
 PLAYER_MAX_X = 395
 
-def push_beta(beta, value):
-    beta.insert(len(beta), value)
-    beta.remove(beta[0])
-    print(beta)
+min_x = 120
+max_x = WINDOWWIDTH - 35
+x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
+ALL_DATA = []   
 
 concenList = []
 
 def concen_handler(unused_addr, args, value):
     global concenList
-    speed = (0.8-value) * 30
+    speed = (1-value) * 60
     # update beta values
     beta = args[0]['beta']
     beta.insert(len(beta), value)
@@ -116,6 +118,18 @@ def terminate():
     else:
         sys.exit()
 
+def sampleAllData():
+    global ALL_DATA
+    if len(ALL_DATA) < WHOLE_IMAGE_WIDTH:
+        return
+    step = int(len(ALL_DATA) / WHOLE_IMAGE_WIDTH)
+    data = []
+    for i in range(0, len(ALL_DATA), step):
+        data.append(ALL_DATA[i])
+    ALL_DATA = data
+    print(len(ALL_DATA))
+    print(ALL_DATA)
+
 def waitForPlayerToPressKey():
     while True:
         for event in pygame.event.get():
@@ -162,17 +176,29 @@ def uploadScore(score, concenList):
 
 
 def drawLines(surface):
-    global gameParams, WINDOWHEIGHT
+    global gameParams, WINDOWHEIGHT, x_data, ALL_DATA
     y_data = gameParams['beta']
-    max_y = 40
-    min_x = 120
-    max_x = WINDOWWIDTH - 35
-    for i in range(len(y_data)):
-        y_data[i] = 10 + max_y * y_data[i]
-    x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
+    max_y = 36
     points = []
+    ALL_DATA.append(y_data[-1])
     for i in range(len(y_data)):
+        y_data[i] = max_y * y_data[i]
         points.append((x_data[i], y_data[i]))
+    linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
+    linerect.topleft = (0, 0)
+    pygame.display.flip()
+
+
+def drawWholeLines(surface):
+    global gameParams, WINDOWHEIGHT, ALL_DATA
+    points = []
+    baseline = 400
+    min_x = 120
+    max_x = WINDOWWIDTH - 120
+    x_data = list(range(min_x, max_x, int((max_x-min_x)/WHOLE_IMAGE_WIDTH)))
+    for i in range(len(ALL_DATA)):
+        points.append((x_data[i], baseline + ALL_DATA[i] * 100))
+    print(points)
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
     pygame.display.flip()
@@ -445,8 +471,7 @@ def game():
                     g.write(str(score))
                     g.close()
                     topScore = score
-                gameOverSound.stop()
-                # upload the scroe
+                # upload the score
                 t = threading.Thread(target=uploadScore, args=(score, concenList))
                 t.start()
                 break
@@ -467,6 +492,7 @@ def game():
         maskSurface = windowSurface.convert_alpha() #important, can not fill directly
         maskSurface.fill(MASKCOLOR)
         windowSurface.blit(maskSurface, (0, 0))
+        sampleAllData() # 对ALL_DATA进行等间隔抽稀，只留下60个采样
         drawText('游戏结束，可在小程序查看分享', appleTipsFont, windowSurface, (WINDOWWIDTH - 190) / 2, 93)
         drawText('你的游戏记录', appleTipsFont, windowSurface, (WINDOWWIDTH - 90) / 2, 118)
         windowSurface.blit(scoreBg, ((WINDOWWIDTH - 313) / 2, 160))
@@ -484,6 +510,7 @@ def game():
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, 145, 315)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 158) / 2, 565), (158, 50)))
         drawText('再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 120) / 2, 570, (102, 143, 15))
+        drawWholeLines(windowSurface)
         pygame.display.update()
         time.sleep(2)
         waitForPlayerToPressKey()
