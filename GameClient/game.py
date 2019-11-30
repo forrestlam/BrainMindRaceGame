@@ -11,6 +11,7 @@ import urllib.request
 import json
 import io
 import threading
+from urllib import parse
 
 event = multiprocessing.Event()
 
@@ -162,9 +163,10 @@ def uploadScore(score, concenList):
     avgCon = 80
     if len(concenList) > 0:
         avgCon = sum(concenList) / len(concenList)
+    data = {'clientId': clientId, 'userId': connectUser['userId'], 'score': score, 'concen': avgCon}
+    data = parse.urlencode(data).encode('utf-8')
     if clientId != None and connectUser != None:
-        response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame/%s/%s/%d/%d'%
-            (clientId, connectUser['userId'], score, avgCon))
+        response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame', data=data)
         res = response.read().decode('utf-8')
         resJson = json.loads(res)
         if not resJson['success']:

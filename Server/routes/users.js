@@ -90,14 +90,17 @@ router.get('/getScore/:userId', function (req, res) {
     var lastScore = user.lastScore != undefined ? user.lastScore : 0;
     var maxScore = user.maxScore != undefined ? user.maxScore : 0;
     var hasUpdateScore = user.hasUpdateScore != undefined ? user.hasUpdateScore : false;
+    var concen = user.concen != undefined　? user.concen : 0;
+    var waves = user.waves != undefined ? user.waves : [2, 3, 5];
     var result = {
       'userId': userId,
       'lastScore': lastScore,
       'maxScore': maxScore,
       'title': '是个狼人',
       'rank': 0.98,
-      'shape': [1, 2, 3],
-      'hasUpdateScore': hasUpdateScore
+      'waves': waves,
+      'hasUpdateScore': hasUpdateScore,
+      'concen': concen
     };
     res.send({ 'success': true, 'result': result });
   } else {
