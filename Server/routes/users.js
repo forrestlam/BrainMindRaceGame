@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var request = require('request');
 var crypto = require('crypto');
+var fs = require('fs');
 
 var requestingTask = {}; //record the openid request
 
@@ -42,6 +43,12 @@ router.get('/login/:code', function (req, res) {
             }
             global.code2User[code] = curUser;
             global.users[curUser.userId] = curUser;
+            fs.writeFile('./data/users.txt', JSON.stringify(global.users), function(err) {
+              if (err) {
+                console.log('Failed to write file');
+                throw err;
+              }
+            });
           } else if (res.errcode && res.errmsg) {
             global.code2User[code] = 'invalide';
             console.log('code2session failed, errcode = ' + res.errcode + ', errmsg = ' + res.errmsg)
@@ -79,6 +86,12 @@ router.post('/bindClient', urlencodedParser, function (req, res) {
     global.users[userId].nickname = nickname;
     global.users[userId].avatar = avatar;
   }
+  fs.writeFile('./data/users.txt', JSON.stringify(global.users), function(err) {
+    if (err) {
+      console.log('Failed to write file');
+      throw err;
+    }
+  });
   console.log('connect client: ' + clientId + ' and user:' + userId);
   res.send({ 'success': true });
 });

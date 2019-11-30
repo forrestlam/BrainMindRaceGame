@@ -220,7 +220,6 @@ Page({
     this.context2d = context;
     var gap = windowWidth * 0.05;
     var scale = windowWidth / 320;
-    // debugger;
     context.drawImage("./rankbg.png", 0, 0, canvasWidth, canvasHeight);
     var topScoreWidth = 106 * scale, topScoreHeight = 13 * scale;
     context.drawImage('./top-score.png', (canvasWidth - topScoreWidth) / 2, 
@@ -229,7 +228,7 @@ Page({
     context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2, 
       gap * 2 + topScoreHeight, avatarWidth, avatarHeight);
     var typeWidth = 522/4 * scale, typeHeight = 96/4 * scale;
-    var typeId = topScore / 20 + 1;
+    var typeId = Math.floor(topScore / 20) + 1;
     if (topScore > 100) {
       typeId = 6;
     }
@@ -246,14 +245,16 @@ Page({
     var waveX = 20, waveY = gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15 + 30, waveWidth = canvasWidth - waveX * 2, waveHeight = canvasHeight - waveY;
     // draw max 20 wave
     context.setStrokeStyle('white');
-    var count = Math.min(waves.length, 20);
+    var count = Math.min(waves.length, 60);
     context.beginPath()
     context.moveTo(waveX, waveY + waveHeight / 2);
     var waveUnitWidth = waveWidth / count;
+    console.log('waves='+waves);
     for (var i = 0; i < count; i++) {
-      var waveValue = waves[i];
-      waveValue = Math.max(waveValue, 0);
+      var waveValue = waves[i] - 1;
+      waveValue = Math.max(waveValue, 0.5);
       waveValue = Math.min(waveValue, 10);
+      console.log(waveValue);
       context.lineTo(waveX + waveUnitWidth * (i + 1), waveY + (10 - waveValue) * waveHeight / 10);
     }
     context.stroke()

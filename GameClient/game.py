@@ -159,11 +159,13 @@ def drawText(text, font, surface, x, y, textColor=TEXTCOLOR):
     surface.blit(textobj, textrect)
 
 def uploadScore(score, concenList):
-    global clientId, connectUser
+    global clientId, connectUser, ALL_DATA
+    waves = ALL_DATA
+    waves = [max(i , 0.05) * 10 for i in waves]
     avgCon = 80
     if len(concenList) > 0:
         avgCon = sum(concenList) / len(concenList)
-    data = {'clientId': clientId, 'userId': connectUser['userId'], 'score': score, 'concen': avgCon}
+    data = {'clientId': clientId, 'userId': connectUser['userId'], 'score': score, 'concen': avgCon, 'waves': ','.join(map(str, waves))}
     data = parse.urlencode(data).encode('utf-8')
     if clientId != None and connectUser != None:
         response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame', data=data)
@@ -196,10 +198,12 @@ def drawWholeLines(surface):
     baseline = 360
     min_x = 125
     max_x = WINDOWWIDTH - 125
+    waves = [0.5]
+    waves.extend(ALL_DATA)
     x_data = list(range(min_x, max_x, int((max_x-min_x)/WHOLE_IMAGE_WIDTH)))
-    r = len(x_data) if len(ALL_DATA) > len(x_data) else len(ALL_DATA)
+    r = min(len(x_data), len(waves))
     for i in range(r):
-        points.append((x_data[i], baseline + ALL_DATA[i] * 100))
+        points.append((x_data[i], baseline + (1 - waves[i]) * 100))
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
     pygame.display.flip()

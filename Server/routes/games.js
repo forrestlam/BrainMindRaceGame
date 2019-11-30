@@ -2,6 +2,7 @@
 
 var express = require('express');
 var router = express.Router();
+var fs = require('fs');
 
 /* GET game client listing. */
 router.get('/', function(req, res) {
@@ -27,7 +28,12 @@ router.post('/finishGame', urlencodedParser, function(req, res) {
     var userId = req.body.userId;
     var concen = req.body.concen;
     var waves = req.body.waves;
+    if (typeof(waves) == "string") {
+        waves = waves.split(',');
+    }
     console.log('score='+score);
+    console.log('waves='+waves);
+    console.log('waves type='+typeof(waves))
     if (global.connections[clientId] && global.connections[clientId].userId == userId && global.users[userId]) {
         // delete global.connections[clientId];
         user = global.users[userId];
@@ -39,6 +45,12 @@ router.post('/finishGame', urlencodedParser, function(req, res) {
         user.lastScore = score;
         user.concen = concen;
         user.waves = waves;
+        fs.writeFile('./data/users.txt', JSON.stringify(global.users), function(err) {
+            if (err) {
+                console.log('Failed to write file');
+                throw err;
+            }
+        });
         res.send({'success': true});
     } else {
         res.send({'success': false, 'errMsg': 'connection is not legal.'});
