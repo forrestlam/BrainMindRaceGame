@@ -18,10 +18,10 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
 
-QRCODE_BG_WIDTH = 267
-QRCODE_BG_HEIGHT = 267
-QRCODE_WIDTH = 216
-QRCODE_HEIGHT = 216
+QRCODE_BG_WIDTH = 267 * scale
+QRCODE_BG_HEIGHT = 267 * scale
+QRCODE_WIDTH = 216 * scale
+QRCODE_HEIGHT = 216 * scale
 
 startGame = game.main
 clientId = None
@@ -78,10 +78,21 @@ def isReadyToPlay():
         time.sleep(2)
 
 def intro():
-    global clientId, connectUser, requestFlag
+    global clientId, connectUser, requestFlag, WINDOW_WIDTH, WINDOW_HEIGHT, scale
     requestFlag = True
     pygame.init()
     pygame.display.set_caption('意念滑板赛')
+    displayInfo = pygame.display.Info()
+    if displayInfo.current_h / WINDOW_HEIGHT > displayInfo.current_w / WINDOW_WIDTH:
+        # fit width
+        scale = displayInfo.current_w / WINDOW_WIDTH
+        WINDOW_HEIGHT = int(scale * WINDOW_HEIGHT)
+        WINDOW_WIDTH = displayInfo.current_w
+    else:
+        # fit height
+        scale = displayInfo.current_h / WINDOW_HEIGHT
+        WINDOW_WIDTH = int(scale * WINDOW_WIDTH)
+        WINDOW_HEIGHT = displayInfo.current_h
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -90,9 +101,9 @@ def intro():
     bgImg = pygame.transform.scale(bgImg, (WINDOW_WIDTH, WINDOW_HEIGHT))
     screen.blit(bgImg, (0, 0))
 
-    qrBgImg = pygame.image.load('image/qrcode_bg.png')
-    qrBgImg = pygame.transform.scale(qrBgImg, (QRCODE_BG_WIDTH, QRCODE_BG_HEIGHT))
-    screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345 * scale))
+    # qrBgImg = pygame.image.load('image/qrcode_bg.png')
+    # qrBgImg = pygame.transform.scale(qrBgImg, (QRCODE_BG_WIDTH, QRCODE_BG_HEIGHT))
+    # screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345 * scale))
 
     if clientId == None:
         clientId = genClientId()
