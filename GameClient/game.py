@@ -208,6 +208,8 @@ def drawWholeLines(surface):
     for i in range(r):
         if waves[i] > 1:
             print("illegal wave %.2f"%waves[i])
+        waves[i] = min(1, waves[i])
+        waves[i] = max(0, waves[i])
         points.append((x_data[i], baseline + (1 - waves[i]) * 100))
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
