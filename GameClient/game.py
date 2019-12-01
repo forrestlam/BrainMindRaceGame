@@ -207,7 +207,7 @@ def drawWholeLines(surface):
     r = min(len(x_data), len(waves))
     for i in range(r):
         if waves[i] > 1:
-            print("illegal wave")
+            print("illegal wave %.2f"%waves[i])
         points.append((x_data[i], baseline + (1 - waves[i]) * 100))
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
@@ -215,7 +215,7 @@ def drawWholeLines(surface):
     
 
 def game():
-    global playerRect, gameParams, count, connectUser, clientId, concenList, WINDOWHEIGHT, WINDOWWIDTH, IMAGE_WIDTH
+    global playerRect, gameParams, count, connectUser, clientId, concenList, WINDOWHEIGHT, WINDOWWIDTH, IMAGE_WIDTH, max_x, x_data
     starttime = None  # for timing
     endtime = None
     # set up pygame, the window, and the mouse cursor

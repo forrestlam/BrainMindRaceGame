@@ -272,7 +272,7 @@ Page({
     var waveX = 20, waveY = gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15 + 30, waveWidth = canvasWidth - waveX * 2, waveHeight = canvasHeight - waveY - 10;
     // draw max 20 wave
     context.setStrokeStyle('white');
-    var count = Math.min(waves.length, 60);
+    var count = waves.length;
     context.beginPath()
     context.moveTo(waveX + left, waveY + waveHeight / 2);
     var waveUnitWidth = waveWidth / count;

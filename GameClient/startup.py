@@ -111,11 +111,11 @@ def intro():
     qrImg.save('clientId.png')
     clientImg = pygame.image.load('clientId.png')
     clientImg = pygame.transform.scale(clientImg, (QRCODE_WIDTH, QRCODE_HEIGHT))
-    screen.blit(clientImg, ((WINDOW_WIDTH - QRCODE_WIDTH) / 2, 370 * scale))
+    screen.blit(clientImg, ((WINDOW_WIDTH - QRCODE_WIDTH) / 2, WINDOW_HEIGHT / 2))
 
     # font = pygame.font.SysFont('simsunnsimsun', FONT_SIZE)
     font = pygame.font.Font('./fonts/TTTGB-Medium.ttf', FONT_SIZE)
-    drawText(u'小程序扫码开始游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 9) / 2, 640 * scale)
+    drawText(u'小程序扫码开始游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 9) / 2, WINDOW_HEIGHT / 2 + QRCODE_HEIGHT + 30)
 
     pygame.display.update()
 
