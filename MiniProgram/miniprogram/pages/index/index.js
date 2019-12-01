@@ -15,6 +15,7 @@ Page({
     topScore: 0,
     localAvatarUrl: './user-unlogin.png',
     showModal: false,
+    openID: ''
   },
 
   context2d: undefined,
@@ -28,6 +29,16 @@ Page({
       userInfo: res.userInfo,
       nickName: res.userInfo.nickName
     });
+    if (this.data.openID.length > 0) {
+      app.vans.saveInfo({
+        openid: this.data.openID,
+        nickname: res.userInfo.nickName,
+        gender: res.userInfo.gender,
+        avatar: res.userInfo.avatarUrl,
+        extr: this.data.userID,
+        tel: ""
+      });
+    }
     var that = this;
     wx.downloadFile({
       url: res.userInfo.avatarUrl,
@@ -51,7 +62,18 @@ Page({
         console.log(res);
         if (res.data.success) {
           if (res.data.user.userId.length) {
-            this.data.userID = res.data.user.userId
+            this.data.userID = res.data.user.userId;
+            if (res.data.user.openId.length > 0) {
+              this.data.openID = res.data.user.openId;
+              app.vans.saveInfo({
+                openid: res.data.user.openId,
+                nickname: "",
+                gender: "male",
+                avatar: "",
+                extr: this.data.userID,
+                tel: ""
+              });
+            }
           }
         } else {
           if (res.data.errMsg == 'invalid code') {

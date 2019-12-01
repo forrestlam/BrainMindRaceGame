@@ -11,9 +11,9 @@ import ssl
 import time
 import threading
 
-WINDOW_WIDTH = 900
-WINDOW_HEIGHT = 1600
-scale = 2
+WINDOW_WIDTH = 450
+WINDOW_HEIGHT = 800
+scale = 1
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
@@ -82,7 +82,7 @@ def intro():
     requestFlag = True
     pygame.init()
     pygame.display.set_caption('意念滑板赛')
-    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags=FULLSCREEN)
+    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
 
