@@ -13,7 +13,8 @@ Page({
     nickName: '未登录',
     hideScore: true,
     topScore: 0,
-    localAvatarUrl: './user-unlogin.png'
+    localAvatarUrl: './user-unlogin.png',
+    showModal: false,
   },
 
   context2d: undefined,
@@ -49,7 +50,9 @@ Page({
       success: res => {
         console.log(res);
         if (res.data.success) {
-          this.data.userID = res.data.user.userId
+          if (res.data.user.userId.length) {
+            this.data.userID = res.data.user.userId
+          }
         } else {
           if (res.data.errMsg == 'invalid code') {
             this.data.code = "";
@@ -181,7 +184,8 @@ Page({
         console.log(res);
         if (res.data.success) {
           this.setData({
-            hideScore: false
+            hideScore: false,
+            showModal: true
           });
           // this.drawSharePic(res.data.result.maxScore, res.data.result.concen);
           var topScore = res.data.result.maxScore;
@@ -212,50 +216,50 @@ Page({
     var systemInfo = wx.getSystemInfoSync();
     var windowWidth = systemInfo.windowWidth;
     var windowHeight = systemInfo.windowHeight;
-    var canvasWidth = 0.725 * windowWidth;
-    var canvasHeight = 0.6 * windowHeight;
+    var canvasWidth = 0.8 * windowWidth;
+    var left = (windowWidth - canvasWidth) / 2;
+    var canvasHeight = 0.7 * windowHeight;
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     var context = wx.createCanvasContext("rankpic");
     this.context2d = context;
     var gap = windowWidth * 0.05;
     var scale = windowWidth / 320;
-    context.drawImage("./rankbg.png", 0, 0, canvasWidth, canvasHeight);
+    context.drawImage("./rankbg.png", 0 + left, 0, canvasWidth, canvasHeight);
     var topScoreWidth = 106 * scale, topScoreHeight = 13 * scale;
-    context.drawImage('./top-score.png', (canvasWidth - topScoreWidth) / 2, 
+    context.drawImage('./top-score.png', (canvasWidth - topScoreWidth) / 2 + left, 
       gap, topScoreWidth, topScoreHeight);
     var avatarWidth = 40 * scale, avatarHeight = 40 * scale;
-    context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2, 
+    context.drawImage(this.data.localAvatarUrl, (canvasWidth - avatarWidth) / 2 + left, 
       gap * 2 + topScoreHeight, avatarWidth, avatarHeight);
     var typeWidth = 522/4 * scale, typeHeight = 96/4 * scale;
     var typeId = Math.floor(topScore / 20) + 1;
     if (topScore > 100) {
       typeId = 6;
     }
-    context.drawImage('./type'+typeId+'.png', (canvasWidth - typeWidth) / 2, 
+    context.drawImage('./type'+typeId+'.png', (canvasWidth - typeWidth) / 2 + left, 
       gap * 3 + avatarHeight + topScoreHeight, typeWidth, typeHeight);
     context.setFontSize(12);
     context.setFillStyle('white');
-    context.fillText("游戏得分: " + topScore + '分', (canvasWidth - typeWidth) / 2 - 23, 
+    context.fillText("游戏得分: " + topScore + '分', (canvasWidth - typeWidth) / 2 - 23 + left, 
       gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15);
-    context.fillText("专注度: " + concen + '分', canvasWidth / 2 + 10, 
+    context.fillText("专注度: " + Math.round(concen) + '分', canvasWidth / 2 + 10 + left, 
       gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15);
 
     // draw waves
-    var waveX = 20, waveY = gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15 + 30, waveWidth = canvasWidth - waveX * 2, waveHeight = canvasHeight - waveY;
+    var waveX = 20, waveY = gap * 3 + avatarHeight + topScoreHeight + typeHeight + 15 + 30, waveWidth = canvasWidth - waveX * 2, waveHeight = canvasHeight - waveY - 10;
     // draw max 20 wave
     context.setStrokeStyle('white');
     var count = Math.min(waves.length, 60);
     context.beginPath()
-    context.moveTo(waveX, waveY + waveHeight / 2);
+    context.moveTo(waveX + left, waveY + waveHeight / 2);
     var waveUnitWidth = waveWidth / count;
     console.log('waves='+waves);
     for (var i = 0; i < count; i++) {
       var waveValue = waves[i] - 1;
       waveValue = Math.max(waveValue, 0.5);
       waveValue = Math.min(waveValue, 10);
-      console.log(waveValue);
-      context.lineTo(waveX + waveUnitWidth * (i + 1), waveY + (10 - waveValue) * waveHeight / 10);
+      context.lineTo(waveX + waveUnitWidth * (i + 1) + left, waveY + (10 - waveValue) * waveHeight / 10);
     }
     context.stroke()
     context.draw();
@@ -292,7 +296,12 @@ Page({
 
   cancelShare: function(e) {
     this.setData({
-      hideScore: true
+      hideScore: true,
+      showModal: false,
     });
   },
+
+  onShareAppMessage: function () {
+
+  }
 })

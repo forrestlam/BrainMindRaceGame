@@ -11,8 +11,9 @@ import ssl
 import time
 import threading
 
-WINDOW_WIDTH = 450
-WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 900
+WINDOW_HEIGHT = 1600
+scale = 2
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
@@ -81,7 +82,7 @@ def intro():
     requestFlag = True
     pygame.init()
     pygame.display.set_caption('意念滑板赛')
-    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags=FULLSCREEN)
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
 
@@ -91,7 +92,7 @@ def intro():
 
     qrBgImg = pygame.image.load('image/qrcode_bg.png')
     qrBgImg = pygame.transform.scale(qrBgImg, (QRCODE_BG_WIDTH, QRCODE_BG_HEIGHT))
-    screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345))
+    screen.blit(qrBgImg, ((WINDOW_WIDTH - QRCODE_BG_WIDTH) / 2, 345 * scale))
 
     if clientId == None:
         clientId = genClientId()
@@ -99,11 +100,11 @@ def intro():
     qrImg.save('clientId.png')
     clientImg = pygame.image.load('clientId.png')
     clientImg = pygame.transform.scale(clientImg, (QRCODE_WIDTH, QRCODE_HEIGHT))
-    screen.blit(clientImg, ((WINDOW_WIDTH - QRCODE_WIDTH) / 2, 370))
+    screen.blit(clientImg, ((WINDOW_WIDTH - QRCODE_WIDTH) / 2, 370 * scale))
 
     # font = pygame.font.SysFont('simsunnsimsun', FONT_SIZE)
     font = pygame.font.Font('./fonts/TTTGB-Medium.ttf', FONT_SIZE)
-    drawText(u'小程序扫码开始游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 9) / 2, 640)
+    drawText(u'小程序扫码开始游戏', font, screen, (WINDOW_WIDTH - FONT_SIZE * 9) / 2, 640 * scale)
 
     pygame.display.update()
 

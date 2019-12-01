@@ -216,7 +216,7 @@ def game():
     # set up pygame, the window, and the mouse cursor
     pygame.init()
     mainClock = pygame.time.Clock()
-    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), flags=FULLSCREEN)
     pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
 

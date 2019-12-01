@@ -14,8 +14,8 @@ page {
   background-size: 100% 100%;
   background-color: transparent;
   position: fixed;
-  bottom: 80px;
-  text-align:center;
+  bottom: 120px;
+  text-align: center;
   left: 50px;
   right: 50px;
 }
@@ -28,10 +28,10 @@ page {
   background-size: 100% 100%;
   background-color: transparent;
   position: fixed;
-  bottom: 50px;
-  margin:0 auto;
-  left:0;
-  right:0;
+  bottom: 60px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
 }
 
 .avatar {
@@ -52,6 +52,110 @@ page {
 }
 
 .rankbg {
+  width: 100vh;
+  height: 70vh;
+  z-index: 9999;
+}
+
+.mask {
   width: 100%;
-  height: 60vh;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #000;
+  z-index: 9000;
+  opacity: 0.7;
+}
+
+.modalDlg {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 25%;
+  z-index: 9999;
+  margin: 0rpx 100rpx 185rpx 100rpx;
+  background-color: #fff;
+  border-radius: 36rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.img_wrap {
+  width: 130rpx;
+  height: 130rpx;
+  background: white;
+  border-radius: 50%;
+  border: 1px solid #0097ff;
+  margin: 0rpx auto;
+  position: absolute;
+  top: -65rpx;
+  margin-bottom: 30rpx;
+}
+
+.img_wrap image {
+  width: 100rpx;
+  height: 100rpx;
+  padding-top: 15rpx;
+  padding-left: 15rpx;
+  margin: 0rpx auto;
+}
+
+.useralert_huiyuan {
+  font-size: 13px;
+  margin-top: 100rpx;
+}
+
+.useralert_quanyi {
+  font-size: 13px;
+  color: darkgray;
+}
+
+.fenggexian {
+  width: 100%;
+  margin-top: 50rpx;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.vipinfo {
+  margin-top: 30rpx;
+  color: #6698ff;
+  font-size: 11px;
+}
+
+.shutalert {
+  width: 110rpx;
+  margin: 0rpx auto;
+}
+
+.shutalert image {
+  width: 100rpx;
+  height: 100rpx;
+  position: absolute;
+  bottom: -120rpx;
+}
+
+.share {
+  background-image: url('https://forrestlin.cn/images/share.png');
+  width: 200px;
+  height: 53px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-color: transparent;
+  position: fixed;
+  bottom: 12vh;
+  text-align: center;
+  left: 50px;
+  right: 50px;
+  z-index: 10000;
+}
+
+.closeShare {
+  z-index: 10000;
+  width: 30px;
+  height: 30px;
+  right: 10vw;
+  position: fixed;
+  top: 3vh;
 }
