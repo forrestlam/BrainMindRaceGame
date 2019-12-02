@@ -180,9 +180,8 @@ def uploadScore(score, concenList):
             print('Succeed to upload score')
 
 
-def drawLines(surface):
-    global gameParams, WINDOWHEIGHT, x_data, ALL_DATA
-    y_data = gameParams['beta']
+def drawLines(surface, x_data, y_data):
+    global ALL_DATA
     max_y = 36
     points = []
     ALL_DATA.append(y_data[-1])
@@ -191,7 +190,7 @@ def drawLines(surface):
         y_data[i] = max_y * y_data[i]
         points.append((x_data[i], y_data[i]))
     if len(points) > 0:
-        linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
+        linerect = pygame.draw.lines(surface, (255, 255, 255), False, points, 5)
         linerect.topleft = (0, 0)
         pygame.display.flip()
 
@@ -510,7 +509,8 @@ def game():
                 score += 1
 
             # Update brain wave image
-            drawLines(windowSurface)
+            t = threading.Thread(target=drawLines, args=(windowSurface, x_data, gameParams['beta']))
+            t.start()
 
             mainClock.tick(FPS)
 
