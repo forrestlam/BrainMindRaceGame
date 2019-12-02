@@ -35,6 +35,7 @@ GAMEDURATION = 120 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
+scale = 1
 
 count=3
 
@@ -160,6 +161,8 @@ def drawText(text, font, surface, x, y, textColor=TEXTCOLOR):
 
 def uploadScore(score, concenList):
     global clientId, connectUser, ALL_DATA
+    if connectUser == None:
+        return
     waves = ALL_DATA
     waves = [max(i , 0.05) * 10 for i in waves]
     avgCon = 80
@@ -196,13 +199,17 @@ def drawWholeLines(surface):
     global gameParams, WINDOWHEIGHT, ALL_DATA
     points = []
     baseline = 360
-    min_x = 125
-    max_x = WINDOWWIDTH - 125
+    min_x = int((WINDOWWIDTH - 313) / 2 + 20)
+    max_x = int(WINDOWWIDTH - (WINDOWWIDTH - 313) / 2 - 20)
     waves = [0.5]
     waves.extend(ALL_DATA)
     x_data = list(range(min_x, max_x, int((max_x-min_x)/WHOLE_IMAGE_WIDTH)))
     r = min(len(x_data), len(waves))
     for i in range(r):
+        if waves[i] > 1:
+            print("illegal wave %.2f"%waves[i])
+        waves[i] = min(1, waves[i])
+        waves[i] = max(0, waves[i])
         points.append((x_data[i], baseline + (1 - waves[i]) * 100))
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
@@ -210,12 +217,25 @@ def drawWholeLines(surface):
     
 
 def game():
-    global playerRect, gameParams, count, connectUser, clientId, concenList
+    global playerRect, gameParams, count, connectUser, clientId, concenList, WINDOWHEIGHT, WINDOWWIDTH, IMAGE_WIDTH, max_x, x_data
     starttime = None  # for timing
     endtime = None
     # set up pygame, the window, and the mouse cursor
     pygame.init()
     mainClock = pygame.time.Clock()
+    displayInfo = pygame.display.Info()
+    if displayInfo.current_h / WINDOWHEIGHT > displayInfo.current_w / WINDOWWIDTH:
+        # fit width
+        scale = displayInfo.current_w / WINDOWWIDTH
+        WINDOWHEIGHT = int(scale * WINDOWHEIGHT)
+        WINDOWWIDTH = displayInfo.current_w
+    else:
+        # fit height
+        scale = displayInfo.current_h / WINDOWHEIGHT
+        WINDOWWIDTH = int(scale * WINDOWWIDTH)
+        WINDOWHEIGHT = displayInfo.current_h
+    max_x = WINDOWWIDTH - 35
+    x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
     windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), flags=FULLSCREEN)
     pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
@@ -260,7 +280,7 @@ def game():
     shoes = [shoe1, shoe2]
     background = pygame.image.load('image/game_bg.jpg')
     wavebg = pygame.image.load('image/wave_bg.png')
-    wavebg = pygame.transform.scale(wavebg, (450, 63))
+    wavebg = pygame.transform.scale(wavebg, (WINDOWWIDTH, 63))
     leftupBg = pygame.image.load('image/leftup_bg.png')
     leftupBg = pygame.transform.scale(leftupBg, (119, 63))
     rightupBg = pygame.image.load('image/rightup_bg.png')
@@ -516,7 +536,7 @@ def game():
         print(concenList)
         if len(concenList) > 0:
             avgConcen = sum(concenList) / len(concenList)
-        drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, 145, 315)
+        drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, 315)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 158) / 2, 565), (158, 50)))
         drawText('再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 120) / 2, 570, (102, 143, 15))
         drawWholeLines(windowSurface)
