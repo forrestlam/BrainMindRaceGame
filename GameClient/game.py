@@ -236,13 +236,13 @@ def game():
         WINDOWHEIGHT = displayInfo.current_h
     max_x = WINDOWWIDTH - 35
     x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
-    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), flags=FULLSCREEN)
+    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
     pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
 
     # fonts
     font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 20)
-    appleFont = pygame.font.Font("./fonts/PingFang-Jian-ChangGuiTi-2.ttf", 28)
+    appleFont = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 28)
     appleTipsFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 14)
     appleTitleFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 16)
     scoreFont = pygame.font.Font('./fonts/TTTGB-Medium.ttf', 12)
@@ -539,7 +539,8 @@ def game():
             avgConcen = sum(concenList) / len(concenList)
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, 315)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, 565), (288, 50)))
-        drawText('按任意键再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 240) / 2, 570, (102, 143, 15))
+        drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), 575, (102, 143, 15))
+        drawText('退出(10s)', appleFont, windowSurface, int((WINDOWWIDTH - 100) / 2), 640)
         drawWholeLines(windowSurface)
         pygame.display.update()
         time.sleep(2)
@@ -591,7 +592,7 @@ def main(user=None, cid=None, callback=None):
                         default=5000,
                         help="The port to listen on")
     args = parser.parse_args()
-    
+    print('ip=%s, port=%d'%(args.ip, args.port))
     oscProcess = multiprocessing.Process(target=start_osc, args=(args.ip, args.port, gameParams))
     oscProcess.start()
 
