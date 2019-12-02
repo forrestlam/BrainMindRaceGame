@@ -31,7 +31,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 60 # game duration
+GAMEDURATION = 120 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
@@ -285,7 +285,7 @@ def game():
     v=open("data/save.dat",'r')
     topScore = int(v.readline())
     v.close()
-    pygame.mixer.music.play(1, 0.0)
+    pygame.mixer.music.play(-1, 0.0)
     while (count>0):
         # start of the game
         baddies = []
