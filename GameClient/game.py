@@ -85,7 +85,7 @@ def acc_handler(unused_addr, args, x, y, z):
         rate = 1
     if rate < 0:
         rate = 0
-    x = WINDOWWIDTH * rate - 60
+    x = WINDOWWIDTH * rate + 30
     args[0]['left'] = PLAYER_MIN_X + x
     event.set()
 
@@ -190,7 +190,7 @@ def drawLines(surface, x_data, y_data):
         y_data[i] = max_y * y_data[i]
         points.append((x_data[i], y_data[i]))
     if len(points) > 0:
-        linerect = pygame.draw.lines(surface, (255, 255, 255), False, points, 5)
+        linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
         linerect.topleft = (0, 0)
         pygame.display.flip()
 
