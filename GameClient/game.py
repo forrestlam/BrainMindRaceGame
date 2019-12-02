@@ -31,7 +31,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 60 # game duration
+GAMEDURATION = 30 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
@@ -211,9 +211,10 @@ def drawWholeLines(surface):
         waves[i] = min(1, waves[i])
         waves[i] = max(0, waves[i])
         points.append((x_data[i], baseline + (1 - waves[i]) * 100))
-    linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
-    linerect.topleft = (0, 0)
-    pygame.display.flip()
+    if len(points) > 0:
+        linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
+        linerect.topleft = (0, 0)
+        pygame.display.flip()
 
 
 def doCounting(windowSurface, seconds):
@@ -231,8 +232,8 @@ def doCounting(windowSurface, seconds):
                 text = str(counter).rjust(3) if counter > 0 else "begin!"
         else:
             windowSurface.fill((0, 0, 0))
-            drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 80, (WINDOWHEIGHT / 3))
-            drawText('左右摆动头部控制滑板', appleTipsFont, windowSurface, (WINDOWWIDTH / 2) - 120, (WINDOWHEIGHT / 2))
+            drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 155, (WINDOWHEIGHT / 3))
+            drawText('左右摆动头部控制滑板', appleTipsFont, windowSurface, (WINDOWWIDTH / 2) - 160, (WINDOWHEIGHT / 2))
             windowSurface.blit(num_font.render(text, True, (0, 0, 0)), (32, 48))
             pygame.display.flip()
             clock.tick(60)
@@ -543,7 +544,7 @@ def game():
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, 315)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, 565), (288, 50)))
         drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), 575, (102, 143, 15))
-        drawText('退出(10s)', appleFont, windowSurface, int((WINDOWWIDTH - 100) / 2), 640)
+        drawText('退出(ESC)', appleFont, windowSurface, int((WINDOWWIDTH - 105) / 2), 640)
         drawWholeLines(windowSurface)
         pygame.display.update()
         time.sleep(2)
