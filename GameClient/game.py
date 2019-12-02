@@ -31,7 +31,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 120 # game duration
+GAMEDURATION = 60 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
@@ -62,7 +62,7 @@ x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
 ALL_DATA = []   
 
 def concen_handler(unused_addr, args, value):
-    speed = (1-value) * 60
+    speed = (1-value) * 30
     # update beta values
     beta = args[0]['beta']
     beta.insert(len(beta), value)
@@ -214,6 +214,30 @@ def drawWholeLines(surface):
     linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
     linerect.topleft = (0, 0)
     pygame.display.flip()
+
+
+def doCounting(windowSurface, seconds):
+    clock = pygame.time.Clock()
+    counter, text = seconds, str(seconds).rjust(3)
+    num_font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 120)
+    appleTipsFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 30)
+    pygame.time.set_timer(pygame.USEREVENT, 1000)
+    while True:
+        if counter <= 0:
+            break
+        for e in pygame.event.get():
+            if e.type == pygame.USEREVENT: 
+                counter -= 1
+                text = str(counter).rjust(3) if counter > 0 else "begin!"
+        else:
+            windowSurface.fill((0, 0, 0))
+            drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 80, (WINDOWHEIGHT / 3))
+            drawText('左右摆动头部控制滑板', appleTipsFont, windowSurface, (WINDOWWIDTH / 2) - 120, (WINDOWHEIGHT / 2))
+            windowSurface.blit(num_font.render(text, True, (0, 0, 0)), (32, 48))
+            pygame.display.flip()
+            clock.tick(60)
+            continue
+        break
     
 
 def game():
@@ -222,6 +246,7 @@ def game():
     endtime = None
     # set up pygame, the window, and the mouse cursor
     pygame.init()
+
     mainClock = pygame.time.Clock()
     displayInfo = pygame.display.Info()
     if displayInfo.current_h / WINDOWHEIGHT > displayInfo.current_w / WINDOWWIDTH:
@@ -290,13 +315,13 @@ def game():
     scoreShoe = pygame.transform.scale(shoe2, (50, 50))
 
     # "Start" screen
-    drawText('Press any key', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
-    drawText('And Enjoy', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3)+30)
+    #drawText('Press any key', font, windowSurface, (WINDOWWIDTH / 3) - 30, (WINDOWHEIGHT / 3))
+    #drawText('And Enjoy', font, windowSurface, (WINDOWWIDTH / 3), (WINDOWHEIGHT / 3)+30)
     #drawRect(windowSurface)
-    pygame.display.update()
+    #pygame.display.update()
     starttime = int(time.time())
     endtime = int(starttime + GAMEDURATION)
-    waitForPlayerToPressKey()
+    #waitForPlayerToPressKey()
     zero=0
     if not os.path.exists("data/save.dat"):
         f=open("data/save.dat",'w')
@@ -306,6 +331,9 @@ def game():
     topScore = int(v.readline())
     v.close()
     pygame.mixer.music.play(-1, 0.0)
+
+    doCounting(windowSurface, 5)
+
     while (count>0):
         # start of the game
         baddies = []
@@ -362,7 +390,6 @@ def game():
                         moveUp = False
                     if event.key == K_DOWN or event.key == ord('s'):
                         moveDown = False
-
                 
 
             # Add new baddies at the top of the screen
@@ -388,23 +415,11 @@ def game():
                             }
                 stars.append(newStar)
 
-            # sideLeft= {'rect': pygame.Rect(0,0,303,600),
-            #         'speed': BADDIESPEED,
-            #         'surface':pygame.transform.scale(wallLeft, (303, 599)),
-            #         }
-            # sideRight= {'rect': pygame.Rect(674,0,303,600),
-            #         'speed': BADDIESPEED,
-            #         'surface':pygame.transform.scale(wallRight, (303, 599)),
-            #         }
-            # walls.append(sideLeft)
-            # walls.append(sideRight)
             background_wall = {'rect': pygame.Rect(0, 0, WINDOWWIDTH, WINDOWHEIGHT),
                     'speed': BADDIESPEED,
                     'surface':pygame.transform.scale(background, (WINDOWWIDTH, WINDOWHEIGHT)),
                     }
-            walls.append(background_wall)
                 
-
             # Move the player around.
             if moveLeft and playerRect.left > PLAYER_MIN_X:
                 playerRect.move_ip(-1 * PLAYERMOVERATE, 0)
@@ -431,14 +446,6 @@ def game():
                 elif slowCheat:
                     s['rect'].move_ip(0, 1)
 
-            # for s in walls:
-            #     if not reverseCheat and not slowCheat:
-            #         s['rect'].move_ip(0, BADDIESPEED)
-            #     elif reverseCheat:
-            #         s['rect'].move_ip(0, -5)
-            #     elif slowCheat:
-            #         s['rect'].move_ip(0, 1)                    
-
             for b in baddies:
                 if b['rect'].top > WINDOWHEIGHT:
                     baddies.remove(b)
@@ -446,10 +453,6 @@ def game():
             for s in stars:
                 if s['rect'].top > WINDOWHEIGHT:
                     stars.remove(s)
-
-            for s in walls:
-                if s['rect'].top > WINDOWHEIGHT:
-                    walls.remove(s)
 
             # Draw the game world on the window.
             # windowSurface.fill(BACKGROUNDCOLOR)
@@ -468,8 +471,7 @@ def game():
             # drawText('Top Score: %s' % (topScore), font, windowSurface,310, 40)
             # drawText('Rest Life: %s' % (count), font, windowSurface, 310, 60)
             # drawText('Speed: %s' % (gameParams['speed']), font, windowSurface, 310, 80)    
-            for s in walls:
-                windowSurface.blit(s['surface'], s['rect'])
+            windowSurface.blit(background_wall['surface'], background_wall['rect'])
 
             windowSurface.blit(playerImage, playerRect)
             
@@ -509,8 +511,9 @@ def game():
                 score += 1
 
             # Update brain wave image
-            t = threading.Thread(target=drawLines, args=(windowSurface, x_data, gameParams['beta']))
-            t.start()
+            #t = threading.Thread(target=drawLines, args=(windowSurface, x_data, gameParams['beta']))
+            #t.start()
+            drawLines(windowSurface, x_data, gameParams['beta'])
 
             mainClock.tick(FPS)
 
