@@ -190,9 +190,10 @@ def drawLines(surface):
     for i in range(r):
         y_data[i] = max_y * y_data[i]
         points.append((x_data[i], y_data[i]))
-    linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
-    linerect.topleft = (0, 0)
-    pygame.display.flip()
+    if len(points) > 0:
+        linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
+        linerect.topleft = (0, 0)
+        pygame.display.flip()
 
 
 def drawWholeLines(surface):
@@ -537,8 +538,8 @@ def game():
         if len(concenList) > 0:
             avgConcen = sum(concenList) / len(concenList)
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, 315)
-        windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 158) / 2, 565), (158, 50)))
-        drawText('再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 120) / 2, 570, (102, 143, 15))
+        windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, 565), (288, 50)))
+        drawText('按任意键再玩一次', appleFont, windowSurface, (WINDOWWIDTH - 240) / 2, 570, (102, 143, 15))
         drawWholeLines(windowSurface)
         pygame.display.update()
         time.sleep(2)
