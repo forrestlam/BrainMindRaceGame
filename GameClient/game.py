@@ -15,8 +15,9 @@ from urllib import parse
 
 event = multiprocessing.Event()
 
-WINDOWWIDTH = 450
-WINDOWHEIGHT = 800
+scale = 1
+WINDOWWIDTH = 450 * scale
+WINDOWHEIGHT = 800 * scale
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 MASKCOLOR = (0, 0, 0, 180)
@@ -31,7 +32,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 30 # game duration
+GAMEDURATION = 120 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
@@ -53,8 +54,8 @@ connectUser = None
 clientId = None
 returnCallback = None
 
-PLAYER_MIN_X = 55
-PLAYER_MAX_X = 395
+PLAYER_MIN_X = 55 * scale
+PLAYER_MAX_X = WINDOWWIDTH - PLAYER_MIN_X
 
 min_x = 120
 max_x = WINDOWWIDTH - 35
@@ -69,10 +70,8 @@ def concen_handler(unused_addr, args, value):
     beta.remove(beta[0])
     args[0]['beta'] = beta
     # calculate speed
-    if speed < 8:
-        speed = 8
-    if speed > 30:
-        speed = 30
+    speed = min(speed, 30)
+    speed = max(speed, 10)
     args[0]['speed'] = speed
     args[0]['concen'] = value * 100
     event.set()    
@@ -168,6 +167,7 @@ def uploadScore(score, concenList):
     avgCon = 80
     if len(concenList) > 0:
         avgCon = sum(concenList) / len(concenList)
+        avgCon = min(avgCon, 100)
     data = {'clientId': clientId, 'userId': connectUser['userId'], 'score': score, 'concen': avgCon, 'waves': ','.join(map(str, waves))}
     data = parse.urlencode(data).encode('utf-8')
     if clientId != None and connectUser != None:
@@ -250,16 +250,16 @@ def game():
 
     mainClock = pygame.time.Clock()
     displayInfo = pygame.display.Info()
-    if displayInfo.current_h / WINDOWHEIGHT > displayInfo.current_w / WINDOWWIDTH:
-        # fit width
-        scale = displayInfo.current_w / WINDOWWIDTH
-        WINDOWHEIGHT = int(scale * WINDOWHEIGHT)
-        WINDOWWIDTH = displayInfo.current_w
-    else:
-        # fit height
-        scale = displayInfo.current_h / WINDOWHEIGHT
-        WINDOWWIDTH = int(scale * WINDOWWIDTH)
-        WINDOWHEIGHT = displayInfo.current_h
+    # if displayInfo.current_h / WINDOWHEIGHT > displayInfo.current_w / WINDOWWIDTH:
+    #     # fit width
+    #     scale = displayInfo.current_w / WINDOWWIDTH
+    #     WINDOWHEIGHT = int(scale * WINDOWHEIGHT)
+    #     WINDOWWIDTH = displayInfo.current_w
+    # else:
+    #     # fit height
+    #     scale = displayInfo.current_h / WINDOWHEIGHT
+    #     WINDOWWIDTH = int(scale * WINDOWWIDTH)
+    #     WINDOWHEIGHT = displayInfo.current_h
     max_x = WINDOWWIDTH - 35
     x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
     windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
@@ -283,7 +283,7 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
-    playerImage = pygame.transform.scale(playerImage, (60, 70))
+    playerImage = pygame.transform.scale(playerImage, (60 * scale, 70 * scale))
 
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
@@ -400,19 +400,19 @@ def game():
                 
             if baddieAddCounter == gameParams['addNewBaddieRate']:
                 baddieAddCounter = 0
-                baddieSize = 54
-                newBaddie = {'rect': pygame.Rect(random.randint(55, 395 - baddieSize), 0, 56, 62),
+                baddieSize = 54 * scale
+                newBaddie = {'rect': pygame.Rect(random.randint(55 * scale, WINDOWWIDTH - 55 * scale - baddieSize), 0, 56 * 2, 62 * 2),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(barriers), (56, 62)),
+                            'surface':pygame.transform.scale(random.choice(barriers), (56 * scale, 62 * scale)),
                             }
                 baddies.append(newBaddie)
 
             if starAddCounter == gameParams['addNewStarRate']:
                 starAddCounter = 0
-                starSize = 67
-                newStar = {'rect': pygame.Rect(random.randint(55, 395 - starSize), 0, 67, 67),
+                starSize = 67 * scale
+                newStar = {'rect': pygame.Rect(random.randint(55 * scale, WINDOWWIDTH - 55 * scale - starSize), 0, starSize, starSize),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(shoes), (67, 67)),
+                            'surface':pygame.transform.scale(random.choice(shoes), (starSize, starSize)),
                             }
                 stars.append(newStar)
 
@@ -526,25 +526,27 @@ def game():
         maskSurface.fill(MASKCOLOR)
         windowSurface.blit(maskSurface, (0, 0))
         sampleAllData() # 对ALL_DATA进行等间隔抽稀，只留下60个采样
-        drawText('游戏结束，可在小程序查看分享', appleTipsFont, windowSurface, (WINDOWWIDTH - 190) / 2, 93)
-        drawText('你的游戏记录', appleTipsFont, windowSurface, (WINDOWWIDTH - 90) / 2, 118)
-        windowSurface.blit(scoreBg, ((WINDOWWIDTH - 313) / 2, 160))
-        drawText('---  本局脑波图  ---', appleTitleFont, windowSurface, (WINDOWWIDTH - 160) / 2, 175)
-        windowSurface.blit(avatarImg, ((WINDOWWIDTH - 50) / 2, 210))
+        baseline = WINDOWHEIGHT / 2 - 300
+        drawText('游戏结束，可在小程序查看分享', appleTipsFont, windowSurface, (WINDOWWIDTH - 190) / 2, baseline)
+        drawText('你的游戏记录', appleTipsFont, windowSurface, (WINDOWWIDTH - 90) / 2, baseline + 25)
+        windowSurface.blit(scoreBg, ((WINDOWWIDTH - 313) / 2, baseline + 67))
+        drawText('---  本局脑波图  ---', appleTitleFont, windowSurface, (WINDOWWIDTH - 160) / 2, baseline + 82)
+        windowSurface.blit(avatarImg, ((WINDOWWIDTH - 50) / 2, baseline + 117))
         typeId = min(score, 100) / 20 + 1
         if score >= 100:
             typeId = 6
         typeImg = pygame.image.load('./image/type%d.png'%typeId)
         typeImg = pygame.transform.scale(typeImg, (130, 24))
-        windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, 280))
+        windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, baseline + 187))
         avgConcen = 80
         print(concenList)
         if len(concenList) > 0:
             avgConcen = sum(concenList) / len(concenList)
-        drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, 315)
+            avgConcen = min(avgConcen, 100)
+        drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, baseline + 222)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, 565), (288, 50)))
-        drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), 575, (102, 143, 15))
-        drawText('退出(ESC)', appleFont, windowSurface, int((WINDOWWIDTH - 105) / 2), 640)
+        drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), baseline + 482, (102, 143, 15))
+        drawText('退出(ESC)', appleFont, windowSurface, int((WINDOWWIDTH - 105) / 2), baseline + 547)
         drawWholeLines(windowSurface)
         pygame.display.update()
         time.sleep(2)

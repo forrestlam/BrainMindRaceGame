@@ -11,9 +11,9 @@ import ssl
 import time
 import threading
 
-WINDOW_WIDTH = 450
-WINDOW_HEIGHT = 800
 scale = 1
+WINDOW_WIDTH = 450 * scale
+WINDOW_HEIGHT = 800 * scale
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
@@ -83,16 +83,16 @@ def intro():
     pygame.init()
     pygame.display.set_caption('意念滑板赛')
     displayInfo = pygame.display.Info()
-    if displayInfo.current_h / WINDOW_HEIGHT > displayInfo.current_w / WINDOW_WIDTH:
-        # fit width
-        scale = displayInfo.current_w / WINDOW_WIDTH
-        WINDOW_HEIGHT = int(scale * WINDOW_HEIGHT)
-        WINDOW_WIDTH = displayInfo.current_w
-    else:
-        # fit height
-        scale = displayInfo.current_h / WINDOW_HEIGHT
-        WINDOW_WIDTH = int(scale * WINDOW_WIDTH)
-        WINDOW_HEIGHT = displayInfo.current_h
+    # if displayInfo.current_h / WINDOW_HEIGHT > displayInfo.current_w / WINDOW_WIDTH:
+    #     # fit width
+    #     scale = displayInfo.current_w / WINDOW_WIDTH
+    #     WINDOW_HEIGHT = int(scale * WINDOW_HEIGHT)
+    #     WINDOW_WIDTH = displayInfo.current_w
+    # else:
+    #     # fit height
+    #     scale = displayInfo.current_h / WINDOW_HEIGHT
+    #     WINDOW_WIDTH = int(scale * WINDOW_WIDTH)
+    #     WINDOW_HEIGHT = displayInfo.current_h
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
