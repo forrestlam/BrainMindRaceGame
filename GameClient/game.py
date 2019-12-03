@@ -15,9 +15,9 @@ from urllib import parse
 
 event = multiprocessing.Event()
 
-scale = 1
-WINDOWWIDTH = 450 * scale
-WINDOWHEIGHT = 800 * scale
+scale = 1.3
+WINDOWWIDTH = int(450 * scale)
+WINDOWHEIGHT = int(800 * scale)
 TEXTCOLOR = (255, 255, 255)
 BACKGROUNDCOLOR = (0, 0, 0)
 MASKCOLOR = (0, 0, 0, 180)
@@ -54,7 +54,7 @@ connectUser = None
 clientId = None
 returnCallback = None
 
-PLAYER_MIN_X = 55 * scale
+PLAYER_MIN_X = int(55 * scale)
 PLAYER_MAX_X = WINDOWWIDTH - PLAYER_MIN_X
 
 min_x = 120
@@ -195,10 +195,9 @@ def drawLines(surface, x_data, y_data):
         pygame.display.flip()
 
 
-def drawWholeLines(surface):
+def drawWholeLines(surface, baseline):
     global gameParams, WINDOWHEIGHT, ALL_DATA
     points = []
-    baseline = 360
     min_x = int((WINDOWWIDTH - 313) / 2 + 20)
     max_x = int(WINDOWWIDTH - (WINDOWWIDTH - 313) / 2 - 20)
     waves = [0.5]
@@ -283,7 +282,7 @@ def game():
 
     # images
     playerImage = pygame.image.load('image/skateboard.png')
-    playerImage = pygame.transform.scale(playerImage, (60 * scale, 70 * scale))
+    playerImage = pygame.transform.scale(playerImage, (int(60 * scale), int(70 * scale)))
 
     car2 = pygame.image.load('image/shit.png')
     # car3 = pygame.image.load('image/shoe2.png')
@@ -400,17 +399,17 @@ def game():
                 
             if baddieAddCounter == gameParams['addNewBaddieRate']:
                 baddieAddCounter = 0
-                baddieSize = 54 * scale
-                newBaddie = {'rect': pygame.Rect(random.randint(55 * scale, WINDOWWIDTH - 55 * scale - baddieSize), 0, 56 * 2, 62 * 2),
+                baddieSize = int(54 * scale)
+                newBaddie = {'rect': pygame.Rect(random.randint(int(55 * scale), WINDOWWIDTH - int(55 * scale) - baddieSize), 0, int(56 * scale), int(62 * scale)),
                             'speed': BADDIESPEED,
-                            'surface':pygame.transform.scale(random.choice(barriers), (56 * scale, 62 * scale)),
+                            'surface':pygame.transform.scale(random.choice(barriers), (int(56 * scale), int(62 * scale))),
                             }
                 baddies.append(newBaddie)
 
             if starAddCounter == gameParams['addNewStarRate']:
                 starAddCounter = 0
-                starSize = 67 * scale
-                newStar = {'rect': pygame.Rect(random.randint(55 * scale, WINDOWWIDTH - 55 * scale - starSize), 0, starSize, starSize),
+                starSize = int(67 * scale)
+                newStar = {'rect': pygame.Rect(random.randint(int(55 * scale), WINDOWWIDTH - int(55 * scale) - starSize), 0, starSize, starSize),
                             'speed': BADDIESPEED,
                             'surface':pygame.transform.scale(random.choice(shoes), (starSize, starSize)),
                             }
@@ -544,10 +543,10 @@ def game():
             avgConcen = sum(concenList) / len(concenList)
             avgConcen = min(avgConcen, 100)
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, baseline + 222)
-        windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, 565), (288, 50)))
+        windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, baseline + 472), (288, 50)))
         drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), baseline + 482, (102, 143, 15))
         drawText('退出(ESC)', appleFont, windowSurface, int((WINDOWWIDTH - 105) / 2), baseline + 547)
-        drawWholeLines(windowSurface)
+        drawWholeLines(windowSurface, baseline + 267)
         pygame.display.update()
         time.sleep(2)
         waitForPlayerToPressKey()

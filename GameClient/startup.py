@@ -11,17 +11,17 @@ import ssl
 import time
 import threading
 
-scale = 1
-WINDOW_WIDTH = 450 * scale
-WINDOW_HEIGHT = 800 * scale
+scale = 1.3
+WINDOW_WIDTH = int(450 * scale)
+WINDOW_HEIGHT = int(800 * scale)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 FONT_SIZE = 30
 
-QRCODE_BG_WIDTH = 267 * scale
-QRCODE_BG_HEIGHT = 267 * scale
-QRCODE_WIDTH = 216 * scale
-QRCODE_HEIGHT = 216 * scale
+QRCODE_BG_WIDTH = int(267 * scale)
+QRCODE_BG_HEIGHT = int(267 * scale)
+QRCODE_WIDTH = int(216 * scale)
+QRCODE_HEIGHT = int(216 * scale)
 
 startGame = game.main
 clientId = None
