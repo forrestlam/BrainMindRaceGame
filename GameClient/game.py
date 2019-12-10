@@ -15,7 +15,7 @@ from urllib import parse
 
 event = multiprocessing.Event()
 
-scale = 1.3
+scale = 2
 WINDOWWIDTH = int(450 * scale)
 WINDOWHEIGHT = int(800 * scale)
 TEXTCOLOR = (255, 255, 255)
@@ -32,7 +32,7 @@ MINADDNEWSTARRATE = 20
 MAXADDNEWSTARRATE = 10
 INITPLAYERMOVERATE = 5
 PLAYERMOVERATE = 5
-GAMEDURATION = 120 # game duration
+GAMEDURATION = 60 # game duration
 
 IMAGE_WIDTH = 45
 WHOLE_IMAGE_WIDTH = 60
@@ -187,7 +187,7 @@ def drawLines(surface, x_data, y_data):
     ALL_DATA.append(y_data[-1])
     r = len(x_data) if len(y_data) > len(x_data) else len(y_data)
     for i in range(r):
-        y_data[i] = max_y * y_data[i]
+        y_data[i] = max_y * y_data[i] + 30
         points.append((x_data[i], y_data[i]))
     if len(points) > 0:
         linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
@@ -481,12 +481,12 @@ def game():
             for s in stars:
                 windowSurface.blit(s['surface'], s['rect'])                
 
-            windowSurface.blit(wavebg, (0, 0))
-            windowSurface.blit(leftupBg, (0, 0))
-            windowSurface.blit(scoreShoe, (3, 5))
-            drawText('X %d'%score, font, windowSurface, 56, 24)
-            windowSurface.blit(rightupBg, (WINDOWWIDTH - 62, 0))
-            drawText('%d'%(endtime - curtime), font, windowSurface, WINDOWWIDTH - 40, 24)
+            windowSurface.blit(wavebg, (0, 30))
+            windowSurface.blit(leftupBg, (10, 30))
+            windowSurface.blit(scoreShoe, (13, 35))
+            drawText('X %d'%score, font, windowSurface, 66, 54)
+            windowSurface.blit(rightupBg, (WINDOWWIDTH - 72, 30))
+            drawText('%d'%(endtime - curtime), font, windowSurface, WINDOWWIDTH - 50, 54)
             # windowSurface.blit(avatarImg, (10, 10))
             # drawText(nickName, font, windowSurface, 10, 65)              
 
@@ -590,11 +590,11 @@ def main(user=None, cid=None, callback=None):
     thread.start_new_thread(loop_event, ())
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip",
-                        default="127.0.0.1",
+                        default="192.168.8.119",
                         help="The ip to listen on")
     parser.add_argument("--port",
                         type=int,
-                        default=5000,
+                        default=5001,
                         help="The port to listen on")
     args = parser.parse_args()
     print('ip=%s, port=%d'%(args.ip, args.port))

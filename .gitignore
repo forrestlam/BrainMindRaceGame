@@ -106,3 +106,4 @@ venv.bak/
 */node_modules/*
 game.py.orig
 GameClient/clientId.png
+GameClient/data/save.dat
