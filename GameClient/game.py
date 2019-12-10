@@ -221,6 +221,8 @@ def doCounting(windowSurface, seconds):
     counter, text = seconds, str(seconds).rjust(3)
     num_font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 120)
     appleTipsFont = pygame.font.Font('./fonts/PingFang-Jian-ChangGuiTi-2.ttf', 30)
+    game_explain = pygame.image.load('image/game_explaination.png')
+    game_explain = pygame.transform.scale(game_explain, (280, 115))
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     while True:
         if counter <= 0:
@@ -231,8 +233,9 @@ def doCounting(windowSurface, seconds):
                 text = str(counter).rjust(3) if counter > 0 else "begin!"
         else:
             windowSurface.fill((0, 0, 0))
-            drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 155, (WINDOWHEIGHT / 3))
-            drawText('左右摆动头部控制滑板', appleTipsFont, windowSurface, (WINDOWWIDTH / 2) - 160, (WINDOWHEIGHT / 2))
+            drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 145, (WINDOWHEIGHT / 3))
+            drawText('左右摆动头部控制滑板', appleTipsFont, windowSurface, (WINDOWWIDTH / 2) - 150, (WINDOWHEIGHT / 2))
+            windowSurface.blit(game_explain, (WINDOWWIDTH / 2 - 150, WINDOWHEIGHT / 2 + 60))
             windowSurface.blit(num_font.render(text, True, (0, 0, 0)), (32, 48))
             pygame.display.flip()
             clock.tick(60)
