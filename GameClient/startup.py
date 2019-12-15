@@ -94,6 +94,7 @@ def intro():
     #     WINDOW_WIDTH = int(scale * WINDOW_WIDTH)
     #     WINDOW_HEIGHT = displayInfo.current_h
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
+    #screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     pygame.draw.rect(screen, WHITE, (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT))
 

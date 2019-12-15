@@ -225,12 +225,17 @@ def doCounting(windowSurface, seconds):
     game_explain = pygame.transform.scale(game_explain, (280, 115))
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     while True:
-        if counter <= 0:
-            break
         for e in pygame.event.get():
             if e.type == pygame.USEREVENT: 
                 counter -= 1
                 text = str(counter).rjust(3) if counter > 0 else "begin!"
+            if e.type == QUIT:
+                terminate()
+            if e.type == KEYDOWN:
+                if e.key == K_ESCAPE: #escape quits
+                    terminate()
+        if counter <= 0:
+            break
         else:
             windowSurface.fill((0, 0, 0))
             drawText(text, num_font, windowSurface, (WINDOWWIDTH / 2) - 145, (WINDOWHEIGHT / 3))
@@ -265,6 +270,7 @@ def game():
     max_x = WINDOWWIDTH - 35
     x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
     windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
+    #windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
 
@@ -557,6 +563,7 @@ def game():
         endtime = int(starttime + GAMEDURATION)      
         score = 0
         concenList = []
+    terminate()
 
 def loop_event():
     global gameParams, playerRect, BADDIESPEED, PLAYERMOVERATE, PLAYER_MIN_X, PLAYER_MAX_X, concenList
