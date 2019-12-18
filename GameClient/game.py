@@ -15,7 +15,7 @@ from urllib import parse
 
 event = multiprocessing.Event()
 
-scale = 2
+scale = 1.2
 WINDOWWIDTH = int(450 * scale)
 WINDOWHEIGHT = int(800 * scale)
 TEXTCOLOR = (255, 255, 255)
@@ -100,7 +100,7 @@ def start_osc(ip, port, info):
     server.serve_forever()    
 
 def terminate():
-    global oscProcess, clientId, connectUser, returnCallback
+    global oscProcess, clientId, connectUser, returnCallback, count
     if connectUser:
         response = urllib.request.urlopen('https://forrestlin.cn/games/closeConnection/%s/%s'%(clientId, connectUser['userId']))
         res = response.read().decode('utf-8')
@@ -111,6 +111,7 @@ def terminate():
             print('Succeed to close connection')
     pygame.quit()
     oscProcess.terminate()
+    count = 3
     # go back the startup page
     if returnCallback:
         returnCallback()

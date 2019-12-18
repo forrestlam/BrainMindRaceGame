@@ -11,7 +11,7 @@ import ssl
 import time
 import threading
 
-scale = 2
+scale = 1.2
 WINDOW_WIDTH = int(450 * scale)
 WINDOW_HEIGHT = int(800 * scale)
 WHITE = (255, 255, 255)
