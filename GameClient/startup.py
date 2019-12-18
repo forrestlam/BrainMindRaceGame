@@ -11,7 +11,7 @@ import ssl
 import time
 import threading
 
-scale = 1.2
+scale = 2
 WINDOW_WIDTH = int(450 * scale)
 WINDOW_HEIGHT = int(800 * scale)
 WHITE = (255, 255, 255)
@@ -43,10 +43,11 @@ def genClientId():
 def terminate():
     global connectUser, requestFlag
     pygame.quit()
+    time.sleep(0.5)
     requestFlag = False
     tmpUser = connectUser
     connectUser = None
-    if tmpUser != None:
+    if tmpUser is not None:
         startGame(tmpUser, clientId, intro)
     else:
         quit()
@@ -129,7 +130,7 @@ def intro():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE: #escape quits
                     terminate()
-        if connectUser != None:
+        if connectUser is not None:
             terminate()
         clock.tick(60)
     

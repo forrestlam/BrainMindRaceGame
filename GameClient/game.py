@@ -1,4 +1,5 @@
 import pygame, random, sys, os, time, math
+import numpy as np
 from pygame.locals import *
 import _thread as thread
 import argparse
@@ -13,9 +14,12 @@ import io
 import threading
 from urllib import parse
 
+fullscreen = True
+hasOscRunning = False
+
 event = multiprocessing.Event()
 
-scale = 1.2
+scale = 2
 WINDOWWIDTH = int(450 * scale)
 WINDOWHEIGHT = int(800 * scale)
 TEXTCOLOR = (255, 255, 255)
@@ -63,7 +67,15 @@ x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
 ALL_DATA = []   
 
 def concen_handler(unused_addr, args, value):
-    speed = (1-value) * 30
+    if oscProcess is None:
+        return
+    #speed = (1-value) * 30
+    #speed = max(value, 1) * 30
+    value = value + 2
+    value = min(value, 4)
+    value = max(value, 0)
+    value = value / 4
+    speed = value * 20
     # update beta values
     beta = args[0]['beta']
     beta.insert(len(beta), value)
@@ -89,6 +101,8 @@ def acc_handler(unused_addr, args, x, y, z):
     event.set()
 
 def start_osc(ip, port, info):
+    global hasOscRunning
+    time.sleep(5)
     dispatcher = dsp.Dispatcher()
     #dispatcher.map("/muse/algorithm/concentration", concen_handler, info)
     dispatcher.map("/muse/elements/delta_absolute", concen_handler, info)
@@ -97,7 +111,8 @@ def start_osc(ip, port, info):
     server = osc_server.ThreadingOSCUDPServer(
         (ip, port), dispatcher)
     print("Serving on {}".format(server.server_address))
-    server.serve_forever()    
+    hasOscRunning = True
+    server.serve_forever()
 
 def terminate():
     global oscProcess, clientId, connectUser, returnCallback, count
@@ -109,8 +124,10 @@ def terminate():
             print('Failed to close connection, reason: %s'%resJson['errMsg'])
         else:
             print('Succeed to close connection')
+    if oscProcess is not None:
+        oscProcess.terminate()
+        oscProcess = None
     pygame.quit()
-    oscProcess.terminate()
     count = 3
     # go back the startup page
     if returnCallback:
@@ -166,12 +183,12 @@ def uploadScore(score, concenList):
     waves = ALL_DATA
     waves = [max(i , 0.05) * 10 for i in waves]
     avgCon = 80
-    if len(concenList) > 0:
+    if len(concenList) > 0:        
         avgCon = sum(concenList) / len(concenList)
         avgCon = min(avgCon, 100)
     data = {'clientId': clientId, 'userId': connectUser['userId'], 'score': score, 'concen': avgCon, 'waves': ','.join(map(str, waves))}
     data = parse.urlencode(data).encode('utf-8')
-    if clientId != None and connectUser != None:
+    if clientId is not None and connectUser is not None:
         response = urllib.request.urlopen('https://forrestlin.cn/games/finishGame', data=data)
         res = response.read().decode('utf-8')
         resJson = json.loads(res)
@@ -188,7 +205,7 @@ def drawLines(surface, x_data, y_data):
     ALL_DATA.append(y_data[-1])
     r = len(x_data) if len(y_data) > len(x_data) else len(y_data)
     for i in range(r):
-        y_data[i] = max_y * y_data[i] + 30
+        y_data[i] = max_y * (1-y_data[i])
         points.append((x_data[i], y_data[i]))
     if len(points) > 0:
         linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
@@ -210,7 +227,7 @@ def drawWholeLines(surface, baseline):
             print("illegal wave %.2f"%waves[i])
         waves[i] = min(1, waves[i])
         waves[i] = max(0, waves[i])
-        points.append((x_data[i], baseline + (1 - waves[i]) * 100))
+        points.append((x_data[i], baseline + (waves[i]) * 100))
     if len(points) > 0:
         linerect = pygame.draw.aalines(surface, (255, 255, 255), False, points, 5)
         linerect.topleft = (0, 0)
@@ -218,6 +235,7 @@ def drawWholeLines(surface, baseline):
 
 
 def doCounting(windowSurface, seconds):
+    global fullscreen
     clock = pygame.time.Clock()
     counter, text = seconds, str(seconds).rjust(3)
     num_font = pygame.font.Font("./fonts/TTTGB-Medium.ttf", 120)
@@ -235,6 +253,13 @@ def doCounting(windowSurface, seconds):
             if e.type == KEYDOWN:
                 if e.key == K_ESCAPE: #escape quits
                     terminate()
+            
+                if e.key==ord('f'):
+                    fullscreen=not fullscreen
+                    if fullscreen:
+                        windowSurface=pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
+                    else:
+                        windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), RESIZABLE, 32)
         if counter <= 0:
             break
         else:
@@ -250,7 +275,7 @@ def doCounting(windowSurface, seconds):
     
 
 def game():
-    global playerRect, gameParams, count, connectUser, clientId, concenList, WINDOWHEIGHT, WINDOWWIDTH, IMAGE_WIDTH, max_x, x_data
+    global playerRect, gameParams, count, connectUser, clientId, concenList, WINDOWHEIGHT, WINDOWWIDTH, IMAGE_WIDTH, max_x, x_data, fullscreen
     starttime = None  # for timing
     endtime = None
     # set up pygame, the window, and the mouse cursor
@@ -270,8 +295,8 @@ def game():
     #     WINDOWHEIGHT = displayInfo.current_h
     max_x = WINDOWWIDTH - 35
     x_data = list(range(min_x, max_x, int((max_x-min_x)/IMAGE_WIDTH)))
-    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
-    #windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+    #windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
+    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), RESIZABLE, 32)
     pygame.display.set_caption('意念滑板赛')
     pygame.mouse.set_visible(False)
 
@@ -342,6 +367,7 @@ def game():
     v.close()
     pygame.mixer.music.play(-1, 0.0)
 
+    windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
     doCounting(windowSurface, 5)
 
     while (count>0):
@@ -400,7 +426,13 @@ def game():
                         moveUp = False
                     if event.key == K_DOWN or event.key == ord('s'):
                         moveDown = False
-                
+
+                    if event.key==ord('f'):
+                        fullscreen=not fullscreen
+                        if fullscreen:
+                            windowSurface=pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), pygame.FULLSCREEN)
+                        else:
+                            windowSurface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), RESIZABLE, 32)
 
             # Add new baddies at the top of the screen
             if not reverseCheat and not slowCheat:
@@ -541,17 +573,19 @@ def game():
         windowSurface.blit(scoreBg, ((WINDOWWIDTH - 313) / 2, baseline + 67))
         drawText('---  本局脑波图  ---', appleTitleFont, windowSurface, (WINDOWWIDTH - 160) / 2, baseline + 82)
         windowSurface.blit(avatarImg, ((WINDOWWIDTH - 50) / 2, baseline + 117))
-        typeId = min(score, 100) / 20 + 1
-        if score >= 100:
-            typeId = 6
-        typeImg = pygame.image.load('./image/type%d.png'%typeId)
-        typeImg = pygame.transform.scale(typeImg, (130, 24))
-        windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, baseline + 187))
         avgConcen = 80
         print(concenList)
         if len(concenList) > 0:
             avgConcen = sum(concenList) / len(concenList)
             avgConcen = min(avgConcen, 100)
+        #typeId = min(score, 100) / 20 + 1
+        typeId = avgConcen / 20 + 1
+        if avgConcen >= 100:
+            typeId = 6
+        typeImg = pygame.image.load('./image/type%d.png'%typeId)
+        typeImg = pygame.transform.scale(typeImg, (130, 24))
+        windowSurface.blit(typeImg, ((WINDOWWIDTH - 130) / 2, baseline + 187))
+        
         drawText("游戏得分: %d分  专注度: %d分"%(score, avgConcen), scoreFont, windowSurface, WINDOWWIDTH / 2 - 85, baseline + 222)
         windowSurface.fill(WHITECOLOR, (((WINDOWWIDTH - 288) / 2, baseline + 472), (288, 50)))
         drawText('按任意键再玩一次', appleFont, windowSurface, int((WINDOWWIDTH - 232) / 2), baseline + 482, (102, 143, 15))
@@ -582,7 +616,7 @@ def loop_event():
         event.clear()
 
 def main(user=None, cid=None, callback=None):
-    global gameParams, oscProcess, connectUser, clientId, returnCallback, IMAGE_WIDTH, concenList
+    global gameParams, oscProcess, connectUser, clientId, returnCallback, IMAGE_WIDTH, concenList, oscProcess, hasOscRunning
     gameParams = multiprocessing.Manager().dict()
     gameParams['speed'] = 8
     gameParams['left'] = WINDOWWIDTH/2
@@ -609,10 +643,18 @@ def main(user=None, cid=None, callback=None):
                         help="The port to listen on")
     args = parser.parse_args()
     print('ip=%s, port=%d'%(args.ip, args.port))
-    oscProcess = multiprocessing.Process(target=start_osc, args=(args.ip, args.port, gameParams))
+    oscProcess = multiprocessing.Process(target=start_osc, args=(args.ip, args.port, gameParams))    
     oscProcess.start()
 
-    game()    
+    try:
+        game()
+    except Exception as e:        
+        if hasOscRunning:
+            oscProcess.terminate()
+            oscProcess = None
+            hasOscRunning = False
+        print(e)
+        quit()
 
 if __name__ == '__main__':
     main()
